@@ -15,6 +15,17 @@ export default {
         accent: ['"Playfair Display"', 'serif'],
         utility: ['"Jost"', 'sans-serif'],
       },
+      keyframes: {
+        heartbeat: {
+          '0%, 40%, 100%': { transform: 'scale(1)' },
+          '10%': { transform: 'scale(1.14)' },
+          '20%': { transform: 'scale(1)' },
+          '30%': { transform: 'scale(1.08)' },
+        },
+      },
+      animation: {
+        heartbeat: 'heartbeat 2.4s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

@@ -6,6 +6,7 @@ export default function MusicToggle() {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -37,6 +38,8 @@ export default function MusicToggle() {
     const audio = audioRef.current;
     if (!audio || hasError) return;
 
+    setHasInteracted(true);
+
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
@@ -65,7 +68,9 @@ export default function MusicToggle() {
         aria-label={isPlaying ? 'Pausar música' : 'Reproducir música'}
         aria-pressed={isPlaying}
         title={hasError ? 'Música no disponible' : undefined}
-        className="fixed right-5 top-5 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-ink text-bone shadow-lg transition-opacity duration-300 disabled:cursor-not-allowed disabled:opacity-30 sm:right-8 sm:top-8"
+        className={`fixed right-5 top-5 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-ink text-bone shadow-lg transition-opacity duration-300 disabled:cursor-not-allowed disabled:opacity-30 sm:right-8 sm:top-8 ${
+          !hasInteracted && !hasError ? 'motion-safe:animate-heartbeat' : ''
+        }`}
       >
         {isPlaying ? (
           <svg

@@ -4,6 +4,11 @@ const WHATSAPP_NUMBER = '573188483238';
 
 const ATTENDANCE_OPTIONS = ['Sí, confirmamos', 'No podré asistir'];
 
+function clampGuests(value) {
+  const parsed = Math.floor(Number(value));
+  return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
+}
+
 function buildMessage({ fullName, attendance, guests, dietary }) {
   const lines = [
     'Hola, quiero confirmar mi asistencia a la boda:',
@@ -22,13 +27,17 @@ function buildMessage({ fullName, attendance, guests, dietary }) {
 export default function RsvpForm() {
   const [fullName, setFullName] = useState('');
   const [attendance, setAttendance] = useState(ATTENDANCE_OPTIONS[0]);
-  const [guests, setGuests] = useState(1);
+  const [guests, setGuests] = useState('1');
   const [dietary, setDietary] = useState('');
+
+  const handleGuestsBlur = () => {
+    setGuests(String(clampGuests(guests)));
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const message = buildMessage({ fullName, attendance, guests, dietary });
+    const message = buildMessage({ fullName, attendance, guests: clampGuests(guests), dietary });
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -112,9 +121,12 @@ export default function RsvpForm() {
                   id="rsvp-guests"
                   type="number"
                   min="1"
+                  step="1"
+                  inputMode="numeric"
                   required
                   value={guests}
-                  onChange={(event) => setGuests(Math.max(1, Number(event.target.value)))}
+                  onChange={(event) => setGuests(event.target.value)}
+                  onBlur={handleGuestsBlur}
                   className="mt-3 w-full border-0 border-b border-bone/30 bg-transparent pb-2 font-display text-lg text-bone focus:border-champagne focus:outline-none"
                 />
               </div>
