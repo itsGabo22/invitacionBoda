@@ -23,11 +23,11 @@ const VENUES = [
 ];
 
 const ITINERARY = [
-  { time: '7:00 pm', label: 'Recepción' },
-  { time: '7:30 pm', label: 'Brindis' },
-  { time: '8:30 pm', label: 'Primer baile' },
-  { time: '9:00 pm', label: 'Cena' },
-  { time: '2:00 am', label: 'Fin' },
+  { time: '7:00 pm', label: 'Recepción', icon: 'door' },
+  { time: '7:30 pm', label: 'Brindis', icon: 'toast' },
+  { time: '8:30 pm', label: 'Primer baile', icon: 'dance' },
+  { time: '9:00 pm', label: 'Cena', icon: 'dinner' },
+  { time: '2:00 am', label: 'Fin', icon: 'moon' },
 ];
 
 // Iconografía de línea, mismo lenguaje que las vetas de pliegue del sobre:
@@ -68,28 +68,116 @@ function ArrowIcon(props) {
   );
 }
 
+// Iconografía en miniatura para cada instante del itinerario, mismo trazo fino
+// que el resto del sitio: sin relleno (salvo pequeños acentos), extremos redondeados.
+function DoorIcon(props) {
+  return (
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" {...props}>
+      <path d="M8 5h12v22H8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M20 5l5 3v18l-5 1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="22" cy="17" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function ToastIcon(props) {
+  return (
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" {...props}>
+      <g stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <g transform="rotate(-18 16 16)">
+          <path d="M8 6h6l-1 9a2 2 0 0 1-4 0z" />
+          <path d="M11 15v9" />
+          <path d="M8 24h6" />
+        </g>
+        <g transform="rotate(18 16 16)">
+          <path d="M18 6h6l-1 9a2 2 0 0 1-4 0z" />
+          <path d="M21 15v9" />
+          <path d="M18 24h6" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function DanceIcon(props) {
+  return (
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" {...props}>
+      <g stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="7" r="2.1" />
+        <path d="M12 9.3v8.5M12 12l-5 3M12 12l4-2M7 26l3-7.5M15 22l-3-4" />
+        <circle cx="21" cy="6" r="2.1" />
+        <path d="M21 8.3v8.5M21 11l5-2M21 11l-4 3M26 22l-3-4.5M17 26l4-8" />
+      </g>
+    </svg>
+  );
+}
+
+function DinnerIcon(props) {
+  return (
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" {...props}>
+      <g stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 4v9M7 4v5a2 2 0 0 0 2 2 2 2 0 0 0 2-2V4M9 13v15" />
+        <path d="M22 4c-2.2 0-3.5 3-3.5 6.5S19.8 16 22 16V4zM22 4v24" />
+      </g>
+    </svg>
+  );
+}
+
+function MoonIcon(props) {
+  return (
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M20.5 6.2A9.8 9.8 0 1 0 25.8 24a8 8 0 0 1-5.3-17.8Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8.5 7.5l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+const EVENT_ICONS = { door: DoorIcon, toast: ToastIcon, dance: DanceIcon, dinner: DinnerIcon, moon: MoonIcon };
+
 function VenueCard({ venue, className = '' }) {
   const Icon = ICONS[venue.icon];
 
   return (
-    <div className={`relative bg-bone p-8 shadow-lg ring-1 ring-ink/10 sm:p-10 ${className}`}>
-      <Icon className="h-11 w-11 text-sage" />
+    <div
+      className={`relative overflow-hidden bg-ink p-10 text-center shadow-[0_30px_55px_-28px_rgba(22,21,19,0.65)] ring-1 ring-champagne/20 sm:p-12 ${className}`}
+    >
+      {/* Luz radial suave, coherente con el tratamiento nocturno de Cuenta regresiva / RSVP */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 [background:radial-gradient(65%_55%_at_50%_0%,rgba(247,245,240,0.08),transparent_70%)]"
+      />
 
-      <p className="mt-6 font-utility text-[11px] font-light uppercase tracking-[0.3em] text-stone">
-        {venue.eyebrow}
-      </p>
-      <p className="mt-2 font-display text-2xl font-bold text-ink sm:text-[1.75rem]">{venue.name}</p>
-      <p className="mt-1 font-accent text-lg italic text-ink/70">{venue.time}</p>
+      <div className="relative">
+        <Icon className="mx-auto h-16 w-16 text-champagne sm:h-20 sm:w-20" />
 
-      <a
-        href={venue.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group mt-7 inline-flex items-center gap-2 border border-ink/25 px-5 py-2.5 font-utility text-[11px] font-light uppercase tracking-[0.25em] text-ink transition-colors duration-300 hover:border-ink hover:bg-ink hover:text-bone"
-      >
-        Ver ubicación
-        <ArrowIcon className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5" />
-      </a>
+        <p className="mt-7 font-utility text-[11px] font-light uppercase tracking-[0.35em] text-bone/60">
+          {venue.eyebrow}
+        </p>
+        <p className="mt-3 font-display text-2xl font-bold text-bone sm:text-3xl">{venue.name}</p>
+        <p className="mt-2 font-accent text-lg italic text-champagne">{venue.time}</p>
+
+        <a
+          href={venue.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group mt-8 inline-flex items-center gap-2 border border-bone/25 px-6 py-2.5 font-utility text-[11px] font-light uppercase tracking-[0.25em] text-bone transition-colors duration-300 hover:border-champagne hover:bg-champagne hover:text-ink"
+        >
+          Ver ubicación
+          <ArrowIcon className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5" />
+        </a>
+      </div>
     </div>
   );
 }
@@ -121,30 +209,44 @@ export default function TimelineLocations() {
         </div>
 
         <div className="mt-16 grid grid-cols-1 gap-16 md:grid-cols-2 md:gap-12">
-          {/* Columna izquierda: tarjetas de ubicación, en capas como la foto sobre el sobre */}
+          {/* Columna izquierda: díptico de tarjetas oscuras, en capas como la foto sobre el sobre */}
           <div className="relative mx-auto w-full max-w-md md:mx-0">
             <VenueCard venue={VENUES[0]} />
             <VenueCard
               venue={VENUES[1]}
-              className="-mt-8 z-10 shadow-xl border-t-2 border-t-champagne"
+              className="-mt-6 z-10 border-t-2 border-t-champagne shadow-[0_36px_60px_-24px_rgba(22,21,19,0.7)] ring-champagne/40 sm:-mt-8"
             />
           </div>
 
-          {/* Columna derecha: itinerario vertical */}
-          <div className="mx-auto w-full max-w-md md:mx-0">
-            <ol data-stagger-group className="relative border-l border-stone/40 pl-9">
-              {ITINERARY.map((item) => (
-                <li key={item.label} data-stagger-item className="relative pb-10 last:pb-0">
-                  <span
-                    aria-hidden="true"
-                    className="absolute -left-[39px] top-1.5 h-2.5 w-2.5 rounded-full bg-champagne ring-4 ring-bone"
-                  />
-                  <p className="font-display text-xl font-bold text-ink sm:text-2xl">{item.time}</p>
-                  <p className="mt-1 font-utility text-sm font-light uppercase tracking-[0.2em] text-stone">
-                    {item.label}
-                  </p>
-                </li>
-              ))}
+          {/* Columna derecha: itinerario vertical, línea en degradado champán y marcadores ilustrados */}
+          <div className="relative mx-auto w-full max-w-md md:mx-0">
+            <div
+              aria-hidden="true"
+              className="absolute left-5 top-6 bottom-6 w-px bg-gradient-to-b from-champagne/80 via-champagne/25 to-transparent"
+            />
+
+            <ol data-stagger-group className="relative space-y-14">
+              {ITINERARY.map((item) => {
+                const EventIcon = EVENT_ICONS[item.icon];
+                return (
+                  <li key={item.label} data-stagger-item className="relative flex items-start gap-6 pl-[3.25rem]">
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-0 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bone ring-1 ring-champagne/60 shadow-[0_10px_18px_-10px_rgba(22,21,19,0.4)]"
+                    >
+                      <EventIcon className="h-5 w-5 text-champagne" />
+                    </span>
+                    <div className="pt-1">
+                      <p className="font-display text-3xl font-bold tabular-nums text-ink sm:text-4xl">
+                        {item.time}
+                      </p>
+                      <p className="mt-2 font-utility text-xs font-light uppercase tracking-[0.28em] text-stone">
+                        {item.label}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
             </ol>
           </div>
         </div>

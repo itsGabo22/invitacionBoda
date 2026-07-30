@@ -9,21 +9,18 @@ const NOISE_TEXTURE = `data:image/svg+xml,${encodeURIComponent(
 )}`;
 
 // Silueta del sobre: pentágono con punta superior, lados con leve ángulo y base plana.
+// Puramente decorativa: ya no enmascara ni contiene la fotografía.
 const ENVELOPE_OUTLINE = '200,0 400,120 390,300 10,300 0,120';
 const FOLD_RIGHT = 'M200,0 L400,120';
 const FOLD_LEFT = 'M200,0 L0,120';
 // Silueta de la solapa: el tercio superior del mismo pentágono, con bisagra en y=120.
 const FLAP_OUTLINE = '200,0 400,120 0,120';
-// Recorte de la fotografía: el mismo pentágono, con un margen interior que deja ver el marco.
-// Aplicado directamente sobre cada <img> (no sobre un div contenedor) para que el
-// recorte y las dimensiones de la imagen coincidan siempre con exactitud.
-const PHOTO_CLIP_PATH = 'polygon(50% 4.5%, 93% 43%, 91.5% 95.5%, 8.5% 95.5%, 7% 43%)';
 
 export default function IntroStory() {
   const clipId = useId().replace(/:/g, '');
   const sectionRef = useRef(null);
   const envelopeRef = useRef(null);
-  const flapRef = useRef(null);
+  const cardRef = useRef(null);
   const photo1Ref = useRef(null);
   const photo2Ref = useRef(null);
 
@@ -31,12 +28,16 @@ export default function IntroStory() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (reduceMotion) {
-      gsap.set(flapRef.current, { rotateX: -172 });
+      gsap.set(cardRef.current, { yPercent: 0 });
       return undefined;
     }
 
     const ctx = gsap.context(() => {
-      gsap.set(flapRef.current, { transformOrigin: '50% 100%' });
+      // Estado inicial: la tarjeta empieza desplazada hacia arriba exactamente su propia
+      // altura (yPercent: -100), de modo que su borde inferior quede justo en la línea de
+      // la solapa (24% del stage) — completamente oculta, en parte por el overflow-hidden
+      // del stage y en parte por la solapa (con fondo bone) que la tapa.
+      gsap.set(cardRef.current, { yPercent: -100 });
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -47,9 +48,9 @@ export default function IntroStory() {
         },
       });
 
-      tl.to(flapRef.current, { rotateX: -172, ease: 'power2.inOut', duration: 1 })
-        .to(photo1Ref.current, { opacity: 0, ease: 'none', duration: 0.45 }, 0.8)
-        .to(photo2Ref.current, { opacity: 1, ease: 'none', duration: 0.45 }, 0.8);
+      tl.to(cardRef.current, { yPercent: 0, ease: 'power2.inOut', duration: 1 })
+        .to(photo1Ref.current, { opacity: 0, ease: 'none', duration: 0.4 }, 0.85)
+        .to(photo2Ref.current, { opacity: 1, ease: 'none', duration: 0.4 }, 0.85);
     }, sectionRef);
 
     return () => ctx.revert();
@@ -131,57 +132,62 @@ export default function IntroStory() {
             </g>
           </svg>
 
-          <div
-            ref={envelopeRef}
-            className="relative z-10 aspect-[4/3] w-full"
-            style={{ perspective: '1400px' }}
-          >
-            {/* Silueta del sobre (queda como marco, detrás de la fotografía) */}
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 400 300"
-              className="absolute inset-0 z-0 h-full w-full"
-              style={{ filter: 'drop-shadow(0 24px 28px rgba(22,21,19,0.35))' }}
-            >
-              <defs>
-                <linearGradient id={`sheen-${clipId}`} x1="0" y1="0" x2="1" y2="0.3">
-                  <stop offset="0%" stopColor="#100f0d" />
-                  <stop offset="50%" stopColor="#221e18" />
-                  <stop offset="100%" stopColor="#100f0d" />
-                </linearGradient>
-              </defs>
-              <polygon points={ENVELOPE_OUTLINE} fill={`url(#sheen-${clipId})`} />
-              <path d={FOLD_RIGHT} stroke="#C9AD7F" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6" />
-              <path d={FOLD_LEFT} stroke="#C9AD7F" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6" />
-            </svg>
-
-            {/* Fotografía: el clip-path va en cada <img>, con las mismas dimensiones que el
-                contenedor del sobre (absolute inset-0 sobre la caja aspect-[4/3]), para que el
-                recorte coincida exactamente con la silueta. Se apila por debajo de la solapa
-                (z-10 < z-20) para que la solapa cerrada la cubra por completo. */}
-            <div className="absolute inset-0 z-10">
-              <img
-                ref={photo1Ref}
-                src="/assets/sobre-foto-01.png"
-                alt="Esteban y Natalia, retrato de pareja"
-                className="absolute inset-0 h-full w-full object-cover"
-                style={{ clipPath: PHOTO_CLIP_PATH, objectPosition: '50% 10%' }}
-              />
-              <img
-                ref={photo2Ref}
-                src="/assets/sobre-foto-02.png"
-                alt="Esteban y Natalia, segundo retrato de pareja"
-                className="absolute inset-0 h-full w-full object-cover opacity-0"
-                style={{ clipPath: PHOTO_CLIP_PATH, objectPosition: '50% 10%' }}
-              />
+          <div ref={envelopeRef} className="relative z-10 aspect-[4/5] w-full overflow-hidden">
+            {/* Silueta del sobre: cuerpo + solapa, 100% decorativa. Ya no contiene ni
+                enmascara la fotografía — solo se dibuja como fondo, anclada arriba con
+                la misma proporción 4:3 que tenía el sobre completo antes. */}
+            <div className="absolute inset-x-0 top-0 z-0 aspect-[4/3] w-full">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 400 300"
+                className="absolute inset-0 h-full w-full"
+                style={{ filter: 'drop-shadow(0 24px 28px rgba(22,21,19,0.35))' }}
+              >
+                <defs>
+                  <linearGradient id={`sheen-${clipId}`} x1="0" y1="0" x2="1" y2="0.3">
+                    <stop offset="0%" stopColor="#100f0d" />
+                    <stop offset="50%" stopColor="#221e18" />
+                    <stop offset="100%" stopColor="#100f0d" />
+                  </linearGradient>
+                </defs>
+                <polygon points={ENVELOPE_OUTLINE} fill={`url(#sheen-${clipId})`} />
+                <path d={FOLD_RIGHT} stroke="#C9AD7F" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6" />
+                <path d={FOLD_LEFT} stroke="#C9AD7F" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6" />
+              </svg>
             </div>
 
-            {/* Solapa: se abre en 3D sobre la bisagra inferior, revelando la fotografía */}
+            {/* Tarjeta de fotografía: rectángulo simple, sin clip-path. Vive detrás de la
+                solapa (z-10 < z-20) y se desliza hacia abajo al hacer scroll, como si se
+                sacara del sobre. Su reposo (top 24%) coincide exactamente con la bisagra
+                de la solapa, así que yPercent:-100 la esconde del todo por encima de ella. */}
             <div
-              ref={flapRef}
-              className="absolute inset-x-0 top-0 z-20 will-change-transform"
-              style={{ height: '40%', transformOrigin: '50% 100%' }}
+              ref={cardRef}
+              className="absolute left-[13%] top-[24%] z-10 w-[74%] aspect-[4/5] bg-bone p-2 shadow-[0_18px_30px_-20px_rgba(22,21,19,0.45)] ring-1 ring-ink/10 will-change-transform"
             >
+              <div className="relative h-full w-full overflow-hidden">
+                <img
+                  ref={photo1Ref}
+                  src="/assets/sobre-foto-01.png"
+                  alt="Esteban y Natalia, retrato de pareja"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  style={{ objectPosition: '50% 10%' }}
+                />
+                <img
+                  ref={photo2Ref}
+                  src="/assets/sobre-foto-02.png"
+                  alt="Esteban y Natalia, segundo retrato de pareja"
+                  className="absolute inset-0 h-full w-full object-cover opacity-0"
+                  style={{ objectPosition: '50% 10%' }}
+                />
+                <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-bone/20" />
+              </div>
+            </div>
+
+            {/* Solapa: estática, puramente decorativa. Su fondo bone (detrás del triángulo)
+                cubre todo el rectángulo del viewBox, no solo el triángulo dibujado, para
+                que oculte por completo la tarjeta mientras está detrás — sin depender del
+                ancho de la tarjeta ni de un clip-path. */}
+            <div className="absolute inset-x-0 top-0 z-20 bg-bone" style={{ height: '24%' }}>
               <svg
                 aria-hidden="true"
                 viewBox="0 0 400 120"
