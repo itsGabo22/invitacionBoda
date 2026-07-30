@@ -38,7 +38,7 @@ export default function Countdown() {
     <section
       id="cuenta-regresiva"
       aria-label="Cuenta regresiva"
-      className="relative overflow-hidden bg-ink px-6 py-24 text-center"
+      className="relative overflow-hidden bg-ink px-6 py-16 text-center sm:py-20"
     >
       {/* Luz radial suave, coherente con el tratamiento nocturno de la portada */}
       <div

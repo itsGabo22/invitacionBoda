@@ -1,12 +1,9 @@
 import { useEffect, useId, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import SectionTexture from './SectionTexture.jsx';
 
 gsap.registerPlugin(ScrollTrigger);
-
-const NOISE_TEXTURE = `data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>'
-)}`;
 
 // Silueta del sobre: pentágono con punta superior, lados con leve ángulo y base plana.
 // Puramente decorativa: ya no enmascara ni contiene la fotografía.
@@ -20,6 +17,7 @@ export default function IntroStory() {
   const clipId = useId().replace(/:/g, '');
   const sectionRef = useRef(null);
   const envelopeRef = useRef(null);
+  const flapRef = useRef(null);
   const cardRef = useRef(null);
   const photo1Ref = useRef(null);
   const photo2Ref = useRef(null);
@@ -28,6 +26,7 @@ export default function IntroStory() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (reduceMotion) {
+      gsap.set(flapRef.current, { transformOrigin: '50% 100%', rotateX: -92, opacity: 0 });
       gsap.set(cardRef.current, { yPercent: 0 });
       return undefined;
     }
@@ -37,6 +36,7 @@ export default function IntroStory() {
       // altura (yPercent: -100), de modo que su borde inferior quede justo en la línea de
       // la solapa (24% del stage) — completamente oculta, en parte por el overflow-hidden
       // del stage y en parte por la solapa (con fondo bone) que la tapa.
+      gsap.set(flapRef.current, { transformOrigin: '50% 100%' });
       gsap.set(cardRef.current, { yPercent: -100 });
 
       const tl = gsap.timeline({
@@ -48,9 +48,23 @@ export default function IntroStory() {
         },
       });
 
-      tl.to(cardRef.current, { yPercent: 0, ease: 'power2.inOut', duration: 1 })
-        .to(photo1Ref.current, { opacity: 0, ease: 'none', duration: 0.4 }, 0.85)
-        .to(photo2Ref.current, { opacity: 1, ease: 'none', duration: 0.4 }, 0.85);
+      // Secuencia: el sobre se abre primero; la tarjeta empieza a salir a medio abrir
+      // (no espera a que la solapa termine) y sigue deslizándose después de que la
+      // solapa se detiene, para que se lea "se abre, luego sale la tarjeta" en vez de
+      // dos animaciones simultáneas y caóticas.
+      // Nota: -172° (casi una vuelta completa) tenía sentido cuando la solapa solo tapaba
+      // una foto estática de su mismo tamaño — pero con la tarjeta deslizándose, pasar de
+      // -90° hace que la solapa "regrese" proyectada hacia abajo y se monte sobre la
+      // tarjeta. Se detiene apenas pasada la perpendicular (-92°, silueta mínima) y además
+      // se desvanece: como la tarjeta sigue deslizándose un rato después de que la solapa
+      // termina de girar, incluso una silueta residual mínima podría cruzar la foto
+      // mientras tanto — el fade a opacity:0 lo evita del todo, sin depender de que la
+      // geometría 3D caiga en un ángulo exacto.
+      tl.to(flapRef.current, { rotateX: -92, ease: 'power2.inOut', duration: 0.7 })
+        .to(flapRef.current, { opacity: 0, ease: 'power1.in', duration: 0.25 }, 0.5)
+        .to(cardRef.current, { yPercent: 0, ease: 'power2.inOut', duration: 0.9 }, 0.45)
+        .to(photo1Ref.current, { opacity: 0, ease: 'none', duration: 0.35 }, 1.35)
+        .to(photo2Ref.current, { opacity: 1, ease: 'none', duration: 0.35 }, 1.35);
     }, sectionRef);
 
     return () => ctx.revert();
@@ -61,78 +75,26 @@ export default function IntroStory() {
       ref={sectionRef}
       id="historia"
       aria-label="Nos casamos"
-      className="relative overflow-hidden bg-bone px-6 py-24"
+      className="relative overflow-hidden bg-bone px-6 py-16 sm:py-20"
     >
-      {/* Textura de papel: grano fino */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 opacity-[0.05] mix-blend-multiply"
-        style={{ backgroundImage: `url("${NOISE_TEXTURE}")`, backgroundRepeat: 'repeat' }}
-      />
-      {/* Textura de papel: luz suave radial */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 [background:radial-gradient(60%_50%_at_50%_0%,rgba(140,132,120,0.10),transparent_70%),radial-gradient(55%_45%_at_50%_100%,rgba(140,132,120,0.08),transparent_70%)]"
-      />
+      <SectionTexture />
 
       <div className="relative z-10">
         {/* Sobre editorial */}
         <div className="relative mx-auto w-full max-w-md">
-          {/* Calas de línea: elemento decorativo focal, asoma tras la esquina del sobre */}
-          <svg
+          {/* Flor: elemento decorativo focal, asoma tras la esquina del sobre */}
+          <img
+            src="/assets/flor-sobre.png"
+            alt=""
             aria-hidden="true"
-            viewBox="0 -30 140 250"
-            fill="none"
-            className="pointer-events-none absolute -bottom-8 -left-6 z-0 h-36 w-[5.75rem] -rotate-[6deg] sm:-bottom-10 sm:-left-9 sm:h-48 sm:w-32 md:-bottom-16 md:-left-20 md:h-80 md:w-52"
-          >
-            <g stroke="currentColor" className="text-sage" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              {/* hojas cruzadas en la base */}
-              <path d="M92,214 C112,198 124,172 120,142 C116,166 100,192 80,206 Z" />
-              <path d="M30,214 C10,200 -2,174 4,145 C6,168 20,192 42,206 Z" />
-              {/* tallo principal */}
-              <path d="M90,216 C86,175 92,130 80,90 C76,75 76,68 78,60" />
-              {/* tallo secundario */}
-              <path d="M40,218 C38,190 42,160 36,138 C34,128 36,123 38,118" />
-            </g>
-            {/* cala grande: capullo acampanado con el espádice asomando */}
-            <g transform="translate(78,60)">
-              <path
-                d="M0,0 C-16,-7 -24,-24 -16,-41 C-10,-54 3,-60 12,-53 C22,-45 19,-25 5,-9 C3,-6 1,-2 0,0 Z"
-                stroke="currentColor"
-                className="text-sage"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M-3,-33 C-6,-44 -3,-55 4,-65 C7,-69 5,-74 0,-76"
-                stroke="currentColor"
-                className="text-champagne"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            </g>
-            {/* cala pequeña, en segundo plano */}
-            <g transform="translate(38,118) scale(0.68)">
-              <path
-                d="M0,0 C-16,-7 -24,-24 -16,-41 C-10,-54 3,-60 12,-53 C22,-45 19,-25 5,-9 C3,-6 1,-2 0,0 Z"
-                stroke="currentColor"
-                className="text-sage"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M-3,-33 C-6,-44 -3,-55 4,-65 C7,-69 5,-74 0,-76"
-                stroke="currentColor"
-                className="text-champagne"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            </g>
-          </svg>
+            className="pointer-events-none absolute -bottom-6 -left-8 z-0 h-28 w-28 -rotate-[4deg] object-contain sm:-bottom-8 sm:-left-10 sm:h-40 sm:w-40 md:-bottom-12 md:-left-16 md:h-56 md:w-56"
+          />
 
-          <div ref={envelopeRef} className="relative z-10 aspect-[4/5] w-full overflow-hidden">
+          <div
+            ref={envelopeRef}
+            className="relative z-10 aspect-[4/5] w-full overflow-hidden"
+            style={{ perspective: '1400px' }}
+          >
             {/* Silueta del sobre: cuerpo + solapa, 100% decorativa. Ya no contiene ni
                 enmascara la fotografía — solo se dibuja como fondo, anclada arriba con
                 la misma proporción 4:3 que tenía el sobre completo antes. */}
@@ -183,11 +145,17 @@ export default function IntroStory() {
               </div>
             </div>
 
-            {/* Solapa: estática, puramente decorativa. Su fondo bone (detrás del triángulo)
+            {/* Solapa: se abre en 3D sobre la bisagra inferior. Puramente decorativa — ya no
+                contiene ni oculta la tarjeta por sí misma durante la animación (eso lo
+                resuelve el overflow-hidden del stage); su fondo bone (detrás del triángulo)
                 cubre todo el rectángulo del viewBox, no solo el triángulo dibujado, para
-                que oculte por completo la tarjeta mientras está detrás — sin depender del
+                que oculte por completo la tarjeta mientras está cerrada — sin depender del
                 ancho de la tarjeta ni de un clip-path. */}
-            <div className="absolute inset-x-0 top-0 z-20 bg-bone" style={{ height: '24%' }}>
+            <div
+              ref={flapRef}
+              className="absolute inset-x-0 top-0 z-20 bg-bone will-change-transform"
+              style={{ height: '24%' }}
+            >
               <svg
                 aria-hidden="true"
                 viewBox="0 0 400 120"

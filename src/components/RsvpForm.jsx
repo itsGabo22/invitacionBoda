@@ -47,7 +47,7 @@ export default function RsvpForm() {
     <section
       id="confirmar-asistencia"
       aria-label="Confirmar asistencia"
-      className="relative overflow-hidden bg-ink px-6 py-24"
+      className="relative overflow-hidden bg-ink px-6 py-16 sm:py-20"
     >
       {/* Luz radial suave, coherente con el tratamiento nocturno de la portada */}
       <div
