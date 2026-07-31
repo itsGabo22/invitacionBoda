@@ -56,7 +56,7 @@ export default function RsvpForm() {
       />
 
       <div data-animate="fade-up" className="relative z-10 mx-auto max-w-md text-center">
-        <p className="font-utility text-[11px] font-light uppercase tracking-[0.35em] text-bone/70">
+        <p className="font-utility text-[11px] font-medium uppercase tracking-[0.35em] text-bone/70">
           RSVP
         </p>
         <p className="mt-4 font-display text-4xl font-bold text-bone sm:text-5xl">

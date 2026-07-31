@@ -10,7 +10,7 @@ export default function GodparentsSection() {
       <SectionTexture />
 
       <div data-animate="fade-up" className="relative z-10 mx-auto max-w-xl text-center">
-        <p className="font-utility text-[11px] font-light uppercase tracking-[0.35em] text-stone">
+        <p className="font-utility text-[11px] font-medium uppercase tracking-[0.35em] text-stone">
           Padrinos
         </p>
         <p className="mt-4 font-display text-3xl font-bold text-ink sm:text-4xl">

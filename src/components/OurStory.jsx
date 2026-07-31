@@ -1,9 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SectionTexture from './SectionTexture.jsx';
-
-gsap.registerPlugin(ScrollTrigger);
 
 // Cinco momentos, en orden cronológico. Las fotos reales se colocan en
 // /public/assets/historia-01.png … historia-05.png; los textos son
@@ -38,6 +35,7 @@ const MOMENTS = [
 
 export default function OurStory() {
   const sectionRef = useRef(null);
+  const stripRef = useRef(null);
   const firstCardRef = useRef(null);
   const photoARef = useRef(null);
   const photoBRef = useRef(null);
@@ -46,28 +44,58 @@ export default function OurStory() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (reduceMotion) {
-      gsap.set(photoBRef.current, { xPercent: 0 });
+      gsap.set(photoBRef.current, { opacity: 1 });
       return undefined;
     }
 
-    const ctx = gsap.context(() => {
-      // Transición de la primera tarjeta: la segunda foto entra deslizando desde la
-      // derecha (xPercent 100 → 0) y cubre a la primera, que queda estática debajo —
-      // ya no es un crossfade de opacidad, es un barrido horizontal. Ligado al scroll
-      // vertical de la tarjeta (independiente del scroll horizontal de la tira).
-      gsap.set(photoBRef.current, { xPercent: 100 });
+    const strip = stripRef.current;
+    const firstCard = firstCardRef.current;
+    if (!strip || !firstCard) return undefined;
 
-      gsap.timeline({
-        scrollTrigger: {
-          trigger: firstCardRef.current,
-          start: 'top 80%',
-          end: 'top 30%',
-          scrub: 0.6,
-        },
-      }).to(photoBRef.current, { xPercent: 0, ease: 'none', duration: 1 });
-    }, sectionRef);
+    // Transición de la primera tarjeta: la segunda foto (bebé) se desvanece encima de
+    // la primera, que queda estática debajo. Antes este crossfade estaba ligado al
+    // scroll VERTICAL de la página, así que podía completarse antes de que la persona
+    // hubiera deslizado la tira horizontal lo suficiente para ver bien la tarjeta —
+    // ahora el progreso se calcula a partir del scrollLeft de la propia tira: avanza
+    // exactamente en el tramo que toma deslizar de la primera tarjeta a la segunda, así
+    // que solo cambia cuando de verdad se desliza el carrusel, no al bajar la página.
+    gsap.set(photoBRef.current, { opacity: 0 });
 
-    return () => ctx.revert();
+    let threshold = 1;
+    // En pantallas anchas la tira puede quedar centrada y (casi) sin overflow —
+    // a veces sobra apenas un puñado de píxeles, imperceptible con mouse (no hay
+    // scrollbar visible). Exigir deslizar al menos medio ancho de tarjeta para
+    // considerarla "deslizable" evita que quede congelada en la primera foto para
+    // siempre en esos casos; con overflow real (el carrusel táctil) sí se activa.
+    let isScrollable = true;
+
+    const measure = () => {
+      const styles = getComputedStyle(strip);
+      const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+      threshold = Math.max(firstCard.offsetWidth + gap, 1);
+      isScrollable = strip.scrollWidth - strip.clientWidth >= threshold * 0.5;
+    };
+
+    const updateFade = () => {
+      const progress = isScrollable ? gsap.utils.clamp(0, 1, strip.scrollLeft / threshold) : 1;
+      gsap.set(photoBRef.current, { opacity: progress });
+    };
+
+    measure();
+    updateFade();
+
+    const resizeObserver = new ResizeObserver(() => {
+      measure();
+      updateFade();
+    });
+    resizeObserver.observe(strip);
+
+    strip.addEventListener('scroll', updateFade, { passive: true });
+
+    return () => {
+      resizeObserver.disconnect();
+      strip.removeEventListener('scroll', updateFade);
+    };
   }, []);
 
   return (
@@ -97,7 +125,7 @@ export default function OurStory() {
       <div className="relative z-10">
         {/* Encabezado */}
         <div className="mx-auto max-w-2xl px-6 text-center">
-          <p className="font-utility text-[11px] font-light uppercase tracking-[0.35em] text-stone">
+          <p className="font-utility text-[11px] font-medium uppercase tracking-[0.35em] text-stone">
             Nuestra historia
           </p>
           <p className="mt-4 font-display text-3xl font-extrabold text-ink sm:text-4xl md:text-5xl">
@@ -114,6 +142,7 @@ export default function OurStory() {
 
         {/* Tira cronológica horizontal */}
         <div
+          ref={stripRef}
           data-stagger-group
           className="[&::-webkit-scrollbar]:hidden mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-px-6 px-6 pb-4 sm:gap-10 sm:px-12 md:justify-center md:px-6"
           style={{ scrollbarWidth: 'none' }}
@@ -144,7 +173,7 @@ export default function OurStory() {
                       src="/assets/historia-01-b.png"
                       alt={moment.alt}
                       loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out will-change-transform group-hover:grayscale-0"
+                      className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out will-change-[opacity] group-hover:grayscale-0"
                     />
                   </>
                 ) : (

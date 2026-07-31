@@ -19,7 +19,7 @@ export default function Hero() {
       {/* Kicker superior */}
       <div className="relative z-10 flex items-center justify-center gap-4 px-6 pt-10 sm:gap-6 sm:pt-14">
         <span className="h-px w-8 bg-bone/40 sm:w-14" />
-        <p className="whitespace-nowrap font-utility text-[10px] font-light uppercase tracking-[0.35em] text-bone/90 sm:text-xs">
+        <p className="whitespace-nowrap font-utility text-[10px] font-medium uppercase tracking-[0.35em] text-bone/90 sm:text-xs">
           Esteban &amp; Natalia
         </p>
         <span className="h-px w-8 bg-bone/40 sm:w-14" />

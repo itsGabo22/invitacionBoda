@@ -47,7 +47,7 @@ export default function Countdown() {
       />
 
       <div data-animate="fade-up" className="relative z-10">
-        <p className="font-utility text-[11px] font-light uppercase tracking-[0.35em] text-bone/70">
+        <p className="font-utility text-[11px] font-medium uppercase tracking-[0.35em] text-bone/70">
           Cuenta regresiva
         </p>
 

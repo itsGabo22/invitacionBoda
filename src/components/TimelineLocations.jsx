@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SectionTexture from './SectionTexture.jsx';
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Datos reales de la boda.
 const VENUES = [
@@ -161,7 +165,7 @@ function VenueCard({ venue, className = '' }) {
       <div className="relative">
         <Icon className="mx-auto h-16 w-16 text-champagne sm:h-20 sm:w-20" />
 
-        <p className="mt-7 font-utility text-[11px] font-light uppercase tracking-[0.35em] text-bone/60">
+        <p className="mt-7 font-utility text-[11px] font-medium uppercase tracking-[0.35em] text-bone/60">
           {venue.eyebrow}
         </p>
         <p className="mt-3 font-display text-2xl font-bold text-bone sm:text-3xl">{venue.name}</p>
@@ -182,7 +186,9 @@ function VenueCard({ venue, className = '' }) {
 }
 
 export default function TimelineLocations() {
+  const sectionRef = useRef(null);
   const itineraryRef = useRef(null);
+  const flowerRef = useRef(null);
   // Alto medido del <ol>, de la hora del primer evento a la del último. La flor
   // (girada 90°) usa este valor como su ancho ANTES de rotar, que es lo que se
   // convierte en su alto final tras la rotación — así cubre exactamente ese
@@ -201,8 +207,45 @@ export default function TimelineLocations() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Centrado + rotación de la flor, antes resueltos con clases de Tailwind
+    // (-translate-x-1/2 -translate-y-1/2 rotate-90). GSAP necesita ser dueño del
+    // transform completo desde el inicio: en cuanto anima xPercent, su transform
+    // inline reemplaza cualquier transform puesto por clases, así que si la
+    // rotación siguiera siendo una clase se perdería al arrancar el scrub.
+    if (reduceMotion) {
+      gsap.set(flowerRef.current, { xPercent: -50, yPercent: -50, rotation: 90 });
+      return undefined;
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.set(flowerRef.current, { xPercent: -50, yPercent: -50, rotation: 90 });
+
+      // Parallax horizontal: la flor (más ancha que su marco, ver comentario junto
+      // al <img>) deriva hacia la izquierda mientras la sección pasa por el
+      // viewport — mismo scrub de scroll normal (top top → bottom top) que usa
+      // data-parallax en useWeddingAnimations.js para el parallax vertical, solo
+      // que aplicado al eje X en vez de yPercent.
+      gsap.to(flowerRef.current, {
+        xPercent: -55,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section
+      ref={sectionRef}
       id="itinerario"
       aria-label="Itinerario y ubicaciones"
       className="relative overflow-hidden bg-bone px-6 py-16 sm:py-20"
@@ -212,7 +255,7 @@ export default function TimelineLocations() {
       <div className="relative z-10 mx-auto max-w-6xl">
         {/* Encabezado */}
         <div className="mx-auto max-w-2xl text-center">
-          <p className="font-utility text-[11px] font-light uppercase tracking-[0.35em] text-stone">
+          <p className="font-utility text-[11px] font-medium uppercase tracking-[0.35em] text-stone">
             Itinerario
           </p>
           <p className="mt-4 font-display text-3xl font-bold text-ink sm:text-4xl md:text-5xl">
@@ -241,22 +284,31 @@ export default function TimelineLocations() {
             <ol ref={itineraryRef} data-stagger-group className="relative space-y-14">
               {/* Flor: rellena el espacio vacío a la derecha de las horas, sin tocar el
                   texto. Vive DENTRO del <ol> (su propio position:relative, no se estira
-                  por el grid como el contenedor de fuera). El "marco" exterior YA tiene
-                  el tamaño final deseado (ancho angosto fijo × alto completo del <ol>) y
-                  se ancla flush arriba-derecha con right-0/top-0 SIN rotar — así evita el
-                  problema de anclar con right/top un elemento rotado, donde el giro pivota
-                  sobre el centro de la caja SIN rotar y desplaza el resultado final. La
-                  imagen de adentro es la que gira 90°, centrada en ambos ejes dentro de
-                  ese marco (top-1/2/left-1/2 + -translate-*-1/2), lo que si funciona bien
-                  con la rotación porque el centro no se mueve al girar. Va primero en el
-                  DOM para que el texto de cada <li> pinte por encima. */}
-              <div className="pointer-events-none absolute right-0 top-0 z-0 h-full w-[95px] overflow-hidden sm:w-[145px] md:w-[180px]">
+                  por el grid como el contenedor de fuera). El "marco" exterior tiene el
+                  tamaño final deseado (ancho × alto completo del <ol>) y se ancla flush
+                  arriba con top-0, con un sangrado hacia la derecha (-right-14) para que
+                  llegue casi hasta el borde de la sección/pantalla en vez de quedarse corta
+                  dentro de la columna — el propio PNG trae algo de relleno transparente
+                  alrededor del dibujo, así que el sangrado compensa también eso, no solo el
+                  padding de la sección. SIN rotar, así se evita el problema de
+                  anclar con right/top un elemento rotado, donde el giro pivota sobre el
+                  centro de la caja sin rotar y desplaza el resultado final. La imagen de
+                  adentro es más ANCHA que el marco (ver su comentario) y gira 90° vía GSAP
+                  (no clases, ver el useEffect) para poder animarla en X sin perder la
+                  rotación. Va primero en el DOM para que el texto de cada <li> pinte
+                  encima. */}
+              <div className="pointer-events-none absolute -right-14 top-0 z-0 h-full w-[130px] overflow-hidden sm:w-[195px] md:w-[235px]">
+                {/* Ancho (h-[…], que tras rotar 90° se vuelve el ancho visible) ~1.65x el
+                    marco: el sobrante queda oculto por el overflow-hidden del marco y le da
+                    margen para derivar en X (ver el gsap.to de arriba) sin descubrir el
+                    fondo en ninguno de los dos bordes del marco. */}
                 <img
+                  ref={flowerRef}
                   src="/assets/flor-itinerario.png"
                   alt=""
                   aria-hidden="true"
                   style={{ width: itineraryHeight }}
-                  className="absolute left-1/2 top-1/2 h-[95px] max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-fill opacity-80 sm:h-[145px] md:h-[180px]"
+                  className="absolute left-1/2 top-1/2 h-[215px] max-w-none object-fill opacity-80 sm:h-[322px] md:h-[388px]"
                 />
               </div>
 

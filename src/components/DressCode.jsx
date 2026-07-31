@@ -48,7 +48,7 @@ export default function DressCode() {
       <SectionTexture />
 
       <div data-animate="fade-up" className="relative z-10 mx-auto max-w-xl text-center">
-        <p className="font-utility text-[11px] font-light uppercase tracking-[0.35em] text-stone">
+        <p className="font-utility text-[11px] font-medium uppercase tracking-[0.35em] text-stone">
           Tipo de vestimenta
         </p>
         <p className="mt-4 font-display text-4xl font-bold text-ink sm:text-5xl">Formal</p>
