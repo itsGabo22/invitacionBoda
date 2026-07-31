@@ -46,15 +46,17 @@ export default function OurStory() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (reduceMotion) {
-      gsap.set(photoARef.current, { opacity: 0 });
-      gsap.set(photoBRef.current, { opacity: 1 });
+      gsap.set(photoBRef.current, { xPercent: 0 });
       return undefined;
     }
 
     const ctx = gsap.context(() => {
-      // Crossfade de la primera tarjeta, mismo mecanismo que el sobre: dos imágenes
-      // apiladas, la de encima se desvanece mientras la de debajo aparece, ligado al
-      // scroll vertical de la tarjeta (independiente del scroll horizontal de la tira).
+      // Transición de la primera tarjeta: la segunda foto entra deslizando desde la
+      // derecha (xPercent 100 → 0) y cubre a la primera, que queda estática debajo —
+      // ya no es un crossfade de opacidad, es un barrido horizontal. Ligado al scroll
+      // vertical de la tarjeta (independiente del scroll horizontal de la tira).
+      gsap.set(photoBRef.current, { xPercent: 100 });
+
       gsap.timeline({
         scrollTrigger: {
           trigger: firstCardRef.current,
@@ -62,9 +64,7 @@ export default function OurStory() {
           end: 'top 30%',
           scrub: 0.6,
         },
-      })
-        .to(photoARef.current, { opacity: 0, ease: 'none', duration: 1 }, 0)
-        .to(photoBRef.current, { opacity: 1, ease: 'none', duration: 1 }, 0);
+      }).to(photoBRef.current, { xPercent: 0, ease: 'none', duration: 1 });
     }, sectionRef);
 
     return () => ctx.revert();
@@ -100,7 +100,7 @@ export default function OurStory() {
           <p className="font-utility text-[11px] font-light uppercase tracking-[0.35em] text-stone">
             Nuestra historia
           </p>
-          <p className="mt-4 font-display text-3xl font-bold text-ink sm:text-4xl md:text-5xl">
+          <p className="mt-4 font-display text-3xl font-extrabold text-ink sm:text-4xl md:text-5xl">
             ¡Momentos que nos trajeron aquí!
           </p>
           <span aria-hidden="true" className="mx-auto mt-8 block h-px w-16 bg-champagne" />
@@ -144,7 +144,7 @@ export default function OurStory() {
                       src="/assets/historia-01-b.png"
                       alt={moment.alt}
                       loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover opacity-0 grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                      className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out will-change-transform group-hover:grayscale-0"
                     />
                   </>
                 ) : (

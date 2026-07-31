@@ -180,13 +180,13 @@ export default function IntroStory() {
         {/* Anuncio */}
         <div className="mx-auto mt-16 max-w-2xl text-center sm:mt-20">
           <p className="font-accent text-4xl italic text-ink sm:text-5xl">Esteban &amp; Natalia</p>
-          <p className="mt-2 font-display text-2xl font-bold leading-snug text-ink sm:text-3xl md:text-4xl">
+          <p className="mt-2 font-display text-2xl font-extrabold leading-snug text-ink sm:text-3xl md:text-4xl">
             ¡Nos casamos y bautizamos a Aylin Celeste!
           </p>
 
           <span aria-hidden="true" className="mx-auto mt-8 block h-px w-16 bg-champagne" />
 
-          <p className="mt-8 font-display text-xl leading-relaxed text-ink/80 md:text-2xl">
+          <p className="mt-8 font-display text-xl font-semibold leading-relaxed text-ink/80 md:text-2xl">
             Dos corazones que se eligen para siempre,
             <br />
             una hija que ilumina nuestras vidas

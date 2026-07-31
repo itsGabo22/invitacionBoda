@@ -16,14 +16,14 @@ function EnvelopeIcon(props) {
 // así que el barrido de la animación es en píxeles fijos (±110px alrededor del "top"
 // base de cada sobre) en vez de vh — a esta altura, un barrido pensado para una
 // sección alta dejaría casi todo el recorrido fuera de la vista.
-const FALLING_ENVELOPES = Array.from({ length: 16 }, (_, i) => ({
+const FALLING_ENVELOPES = Array.from({ length: 34 }, (_, i) => ({
   id: i,
   left: Math.round(Math.random() * 96),
   top: Math.round(Math.random() * 90),
-  size: 16 + Math.random() * 16,
+  size: 22 + Math.random() * 24,
   duration: 3.5 + Math.random() * 3.5,
   delay: -(Math.random() * 7),
-  opacity: 0.25 + Math.random() * 0.3,
+  opacity: 0.4 + Math.random() * 0.4,
   rotA: -14 + Math.random() * 10,
   rotB: 4 + Math.random() * 10,
 }));

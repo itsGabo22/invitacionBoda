@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import SectionTexture from './SectionTexture.jsx';
 
 // Datos reales de la boda.
@@ -181,6 +182,25 @@ function VenueCard({ venue, className = '' }) {
 }
 
 export default function TimelineLocations() {
+  const itineraryRef = useRef(null);
+  // Alto medido del <ol>, de la hora del primer evento a la del último. La flor
+  // (girada 90°) usa este valor como su ancho ANTES de rotar, que es lo que se
+  // convierte en su alto final tras la rotación — así cubre exactamente ese
+  // rango sin importar cuántas líneas ocupe cada evento ni el breakpoint.
+  const [itineraryHeight, setItineraryHeight] = useState(420);
+
+  useEffect(() => {
+    const el = itineraryRef.current;
+    if (!el) return undefined;
+
+    const measure = () => setItineraryHeight(el.getBoundingClientRect().height);
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section
       id="itinerario"
@@ -218,17 +238,28 @@ export default function TimelineLocations() {
               className="absolute left-5 top-6 bottom-6 w-px bg-gradient-to-b from-champagne/80 via-champagne/25 to-transparent"
             />
 
-            {/* Flor: rellena el espacio vacío a la derecha de las horas. Girada 90° para
-                que su forma horizontal original quede alta y angosta, a juego con ese
-                hueco. Va antes del <ol> en el DOM para que el texto pinte por encima. */}
-            <img
-              src="/assets/flor-itinerario.png"
-              alt=""
-              aria-hidden="true"
-              className="pointer-events-none absolute right-0 top-1/2 z-0 h-[95px] w-[190px] -translate-y-1/2 rotate-90 object-contain opacity-80 sm:h-[145px] sm:w-[260px] md:h-[180px] md:w-[320px]"
-            />
+            <ol ref={itineraryRef} data-stagger-group className="relative space-y-14">
+              {/* Flor: rellena el espacio vacío a la derecha de las horas, sin tocar el
+                  texto. Vive DENTRO del <ol> (su propio position:relative, no se estira
+                  por el grid como el contenedor de fuera). El "marco" exterior YA tiene
+                  el tamaño final deseado (ancho angosto fijo × alto completo del <ol>) y
+                  se ancla flush arriba-derecha con right-0/top-0 SIN rotar — así evita el
+                  problema de anclar con right/top un elemento rotado, donde el giro pivota
+                  sobre el centro de la caja SIN rotar y desplaza el resultado final. La
+                  imagen de adentro es la que gira 90°, centrada en ambos ejes dentro de
+                  ese marco (top-1/2/left-1/2 + -translate-*-1/2), lo que si funciona bien
+                  con la rotación porque el centro no se mueve al girar. Va primero en el
+                  DOM para que el texto de cada <li> pinte por encima. */}
+              <div className="pointer-events-none absolute right-0 top-0 z-0 h-full w-[95px] overflow-hidden sm:w-[145px] md:w-[180px]">
+                <img
+                  src="/assets/flor-itinerario.png"
+                  alt=""
+                  aria-hidden="true"
+                  style={{ width: itineraryHeight }}
+                  className="absolute left-1/2 top-1/2 h-[95px] max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-fill opacity-80 sm:h-[145px] md:h-[180px]"
+                />
+              </div>
 
-            <ol data-stagger-group className="relative space-y-14">
               {ITINERARY.map((item) => {
                 const EventIcon = EVENT_ICONS[item.icon];
                 return (
