@@ -38,7 +38,7 @@ export default function Hero() {
             className="pointer-events-none absolute -inset-x-5 -inset-y-3 rounded-full bg-ink/60 blur-lg sm:-inset-x-8 sm:-inset-y-4 sm:blur-xl"
           />
           <p className="relative z-10 font-utility text-[9px] font-light uppercase tracking-[0.25em] text-bone/85 sm:text-[11px] sm:tracking-[0.3em]">
-            Capilla Cristo Obrero · Salón Coonartax · 15.08.2026
+            15.08.2026
           </p>
         </div>
       </div>

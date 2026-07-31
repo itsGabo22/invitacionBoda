@@ -196,7 +196,7 @@ export default function TimelineLocations() {
             Itinerario
           </p>
           <p className="mt-4 font-display text-3xl font-bold text-ink sm:text-4xl md:text-5xl">
-            Cuándo y dónde
+            ¿Cuándo y dónde?
           </p>
           <span aria-hidden="true" className="mx-auto mt-8 block h-px w-16 bg-champagne" />
         </div>
@@ -216,6 +216,16 @@ export default function TimelineLocations() {
             <div
               aria-hidden="true"
               className="absolute left-5 top-6 bottom-6 w-px bg-gradient-to-b from-champagne/80 via-champagne/25 to-transparent"
+            />
+
+            {/* Flor: rellena el espacio vacío a la derecha de las horas. Girada 90° para
+                que su forma horizontal original quede alta y angosta, a juego con ese
+                hueco. Va antes del <ol> en el DOM para que el texto pinte por encima. */}
+            <img
+              src="/assets/flor-itinerario.png"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute right-0 top-1/2 z-0 h-[95px] w-[190px] -translate-y-1/2 rotate-90 object-contain opacity-80 sm:h-[145px] sm:w-[260px] md:h-[180px] md:w-[320px]"
             />
 
             <ol data-stagger-group className="relative space-y-14">

@@ -137,7 +137,7 @@ export default function IntroStory() {
                 <img
                   ref={photo2Ref}
                   src="/assets/sobre-foto-02.png"
-                  alt="Esteban y Natalia, segundo retrato de pareja"
+                  alt="El bautizo de Aylin Celeste"
                   className="absolute inset-0 h-full w-full object-cover opacity-0"
                   style={{ objectPosition: '50% 10%' }}
                 />
@@ -180,8 +180,8 @@ export default function IntroStory() {
         {/* Anuncio */}
         <div className="mx-auto mt-16 max-w-2xl text-center sm:mt-20">
           <p className="font-accent text-4xl italic text-ink sm:text-5xl">Esteban &amp; Natalia</p>
-          <p className="mt-2 font-display text-3xl font-bold text-ink sm:text-4xl md:text-5xl">
-            ¡Nos casamos!
+          <p className="mt-2 font-display text-2xl font-bold leading-snug text-ink sm:text-3xl md:text-4xl">
+            ¡Nos casamos y bautizamos a Aylin Celeste!
           </p>
 
           <span aria-hidden="true" className="mx-auto mt-8 block h-px w-16 bg-champagne" />

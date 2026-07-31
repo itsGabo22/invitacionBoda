@@ -1,4 +1,9 @@
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SectionTexture from './SectionTexture.jsx';
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Cinco momentos, en orden cronológico. Las fotos reales se colocan en
 // /public/assets/historia-01.png … historia-05.png; los textos son
@@ -27,13 +32,47 @@ const MOMENTS = [
   {
     src: '/assets/historia-05.png',
     alt: 'Esteban, Natalia y Aylin, la familia completa',
-    caption: 'Los tres',
+    caption: 'Nuestra familia',
   },
 ];
 
 export default function OurStory() {
+  const sectionRef = useRef(null);
+  const firstCardRef = useRef(null);
+  const photoARef = useRef(null);
+  const photoBRef = useRef(null);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduceMotion) {
+      gsap.set(photoARef.current, { opacity: 0 });
+      gsap.set(photoBRef.current, { opacity: 1 });
+      return undefined;
+    }
+
+    const ctx = gsap.context(() => {
+      // Crossfade de la primera tarjeta, mismo mecanismo que el sobre: dos imágenes
+      // apiladas, la de encima se desvanece mientras la de debajo aparece, ligado al
+      // scroll vertical de la tarjeta (independiente del scroll horizontal de la tira).
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: firstCardRef.current,
+          start: 'top 80%',
+          end: 'top 30%',
+          scrub: 0.6,
+        },
+      })
+        .to(photoARef.current, { opacity: 0, ease: 'none', duration: 1 }, 0)
+        .to(photoBRef.current, { opacity: 1, ease: 'none', duration: 1 }, 0);
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section
+      ref={sectionRef}
       id="nuestra-historia"
       aria-label="Nuestra historia"
       className="relative overflow-hidden bg-bone py-16 sm:py-20"
@@ -47,6 +86,13 @@ export default function OurStory() {
         aria-hidden="true"
         className="pointer-events-none absolute -top-4 left-0 z-0 w-40 object-contain opacity-90 sm:w-56 md:w-72"
       />
+      {/* Misma flor, reflejada, como acento simétrico en la esquina opuesta */}
+      <img
+        src="/assets/flor-historia.png"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-4 right-0 z-0 w-40 object-contain opacity-90 [transform:scaleX(-1)] sm:w-56 md:w-72"
+      />
 
       <div className="relative z-10">
         {/* Encabezado */}
@@ -55,7 +101,7 @@ export default function OurStory() {
             Nuestra historia
           </p>
           <p className="mt-4 font-display text-3xl font-bold text-ink sm:text-4xl md:text-5xl">
-            Momentos que nos trajeron aquí
+            ¡Momentos que nos trajeron aquí!
           </p>
           <span aria-hidden="true" className="mx-auto mt-8 block h-px w-16 bg-champagne" />
         </div>
@@ -80,13 +126,35 @@ export default function OurStory() {
                 index % 2 === 1 ? 'sm:mt-8' : ''
               }`}
             >
-              <div className="relative aspect-[3/4] overflow-hidden bg-stone/10 shadow-[0_18px_30px_-20px_rgba(22,21,19,0.45)] ring-1 ring-ink/10 transition-transform duration-500 ease-out group-hover:-translate-y-1">
-                <img
-                  src={moment.src}
-                  alt={moment.alt}
-                  loading="lazy"
-                  className="h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
-                />
+              <div
+                ref={index === 0 ? firstCardRef : undefined}
+                className="relative aspect-[3/4] overflow-hidden bg-stone/10 shadow-[0_18px_30px_-20px_rgba(22,21,19,0.45)] ring-1 ring-ink/10 transition-transform duration-500 ease-out group-hover:-translate-y-1"
+              >
+                {index === 0 ? (
+                  <>
+                    <img
+                      ref={photoARef}
+                      src="/assets/historia-01.png"
+                      alt={moment.alt}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                    />
+                    <img
+                      ref={photoBRef}
+                      src="/assets/historia-01-b.png"
+                      alt={moment.alt}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover opacity-0 grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                    />
+                  </>
+                ) : (
+                  <img
+                    src={moment.src}
+                    alt={moment.alt}
+                    loading="lazy"
+                    className="h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                  />
+                )}
                 <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-bone/20" />
               </div>
               <figcaption className="mt-5 text-center">

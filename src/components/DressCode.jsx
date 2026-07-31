@@ -1,11 +1,25 @@
+import { useState } from 'react';
 import SectionTexture from './SectionTexture.jsx';
 
-// La paleta de la propia invitación, usada como guía de color para los invitados.
-const SWATCHES = [
-  { name: 'Tinta', className: 'bg-ink' },
-  { name: 'Salvia', className: 'bg-sage' },
-  { name: 'Champán', className: 'bg-champagne' },
-];
+// Silueta editorial: PNG transparente sobre fondo bone, con un halo champán suave
+// al pasar el cursor. Si el archivo aún no existe, se oculta sola (sin icono roto)
+// dejando el espacio reservado para que no haya salto de layout.
+function Silhouette({ src, alt }) {
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <div className="relative aspect-[2/3] w-full max-w-[170px] bg-stone/5 sm:max-w-[210px]">
+      {!failed && (
+        <img
+          src={src}
+          alt={alt}
+          onError={() => setFailed(true)}
+          className="h-full w-full object-contain object-bottom transition-[filter,transform] duration-500 ease-out hover:scale-[1.03] hover:drop-shadow-[0_0_22px_rgba(201,173,127,0.55)]"
+        />
+      )}
+    </div>
+  );
+}
 
 export default function DressCode() {
   return (
@@ -20,26 +34,17 @@ export default function DressCode() {
         <p className="font-utility text-[11px] font-light uppercase tracking-[0.35em] text-stone">
           Código de vestimenta
         </p>
-        <p className="mt-4 font-display text-4xl font-bold text-ink sm:text-5xl">Elegante</p>
+        <p className="mt-4 font-display text-4xl font-bold text-ink sm:text-5xl">Formal</p>
         <span aria-hidden="true" className="mx-auto mt-8 block h-px w-16 bg-champagne" />
 
-        <div className="mx-auto mt-10 flex justify-center gap-8">
-          {SWATCHES.map((swatch) => (
-            <div key={swatch.name} className="flex flex-col items-center gap-3">
-              <span className={`h-14 w-14 ring-1 ring-ink/10 ${swatch.className}`} aria-hidden="true" />
-              <span className="font-utility text-[10px] font-light uppercase tracking-[0.25em] text-stone">
-                {swatch.name}
-              </span>
-            </div>
-          ))}
+        <div data-stagger-group className="mx-auto mt-12 flex items-end justify-center gap-8 sm:gap-12">
+          <div data-stagger-item>
+            <Silhouette src="/assets/silueta-traje.png" alt="Silueta de traje formal para caballero" />
+          </div>
+          <div data-stagger-item>
+            <Silhouette src="/assets/silueta-vestido.png" alt="Silueta de vestido formal para dama" />
+          </div>
         </div>
-
-        <p className="mx-auto mt-10 max-w-md font-display text-lg leading-relaxed text-ink/80 md:text-xl">
-          Los invitamos a acompañarnos con atuendo formal. Nuestra paleta —tinta, salvia y
-          champán— es una guía bienvenida para su elección.
-          <br />
-          Por favor eviten el blanco y el marfil, reservados para la novia.
-        </p>
       </div>
     </section>
   );

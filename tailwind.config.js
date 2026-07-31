@@ -22,9 +22,16 @@ export default {
           '20%': { transform: 'scale(1)' },
           '30%': { transform: 'scale(1.08)' },
         },
+        'envelope-fall': {
+          '0%': { transform: 'translateY(-110px) rotate(var(--fall-rot-a, -6deg))', opacity: '0' },
+          '15%': { opacity: 'var(--fall-opacity, 0.4)' },
+          '85%': { opacity: 'var(--fall-opacity, 0.4)' },
+          '100%': { transform: 'translateY(110px) rotate(var(--fall-rot-b, 6deg))', opacity: '0' },
+        },
       },
       animation: {
         heartbeat: 'heartbeat 2.4s ease-in-out infinite',
+        'envelope-fall': 'envelope-fall linear infinite',
       },
     },
   },
