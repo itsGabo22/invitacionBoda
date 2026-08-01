@@ -57,7 +57,7 @@ export default function MusicToggle() {
       <audio
         ref={audioRef}
         src="/assets/song.mp3"
-        preload="none"
+        preload="auto"
         onEnded={handleEnded}
         onError={() => setHasError(true)}
       />

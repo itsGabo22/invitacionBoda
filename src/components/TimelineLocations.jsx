@@ -296,8 +296,27 @@ export default function TimelineLocations() {
                   adentro es más ANCHA que el marco (ver su comentario) y gira 90° vía GSAP
                   (no clases, ver el useEffect) para poder animarla en X sin perder la
                   rotación. Va primero en el DOM para que el texto de cada <li> pinte
-                  encima. */}
-              <div className="pointer-events-none absolute -right-14 top-0 z-0 h-full w-[130px] overflow-hidden sm:w-[195px] md:w-[235px]">
+                  encima.
+                  El propio MARCO (no solo la imagen) lleva una máscara CSS: sin ella, aunque
+                  el PNG sea transparente/orgánico, el recorte overflow-hidden del marco
+                  dibuja un borde recto duro contra el fondo — visible sobre todo arriba/abajo
+                  (fijos, no se mueven con el drift horizontal) y también a la izquierda
+                  (el único borde que de verdad queda dentro de la columna visible). Dos
+                  gradientes lineales (vertical + horizontal) combinados con
+                  mask-composite:intersect dejan opaco solo el centro y desvanecen los cuatro
+                  bordes por igual, sin importar qué franja de la imagen esté pasando por ahí
+                  en un momento dado del scroll. */}
+              <div
+                className="pointer-events-none absolute -right-14 top-0 z-0 h-full w-[130px] overflow-hidden sm:w-[195px] md:w-[235px]"
+                style={{
+                  maskImage:
+                    'linear-gradient(to bottom, transparent, black 12%, black 88%, transparent), linear-gradient(to right, transparent, black 14%, black 86%, transparent)',
+                  maskComposite: 'intersect',
+                  WebkitMaskImage:
+                    'linear-gradient(to bottom, transparent, black 12%, black 88%, transparent), linear-gradient(to right, transparent, black 14%, black 86%, transparent)',
+                  WebkitMaskComposite: 'source-in',
+                }}
+              >
                 {/* Ancho (h-[…], que tras rotar 90° se vuelve el ancho visible) ~2.3x el
                     marco: el sobrante queda oculto por el overflow-hidden del marco y le da
                     margen para derivar en X (ver el gsap.to de arriba, xPercent -50→-66)

@@ -60,24 +60,24 @@ export default function OurStory() {
     // exactamente en el tramo que toma deslizar de la primera tarjeta a la segunda, así
     // que solo cambia cuando de verdad se desliza el carrusel, no al bajar la página.
     //
-    // El umbral es la MITAD del ancho de la tarjeta (no la tarjeta+gap completa): si
-    // dura el ancho completo, el crossfade termina justo cuando la tarjeta 1 ya está
-    // saliendo de la vista (exactamente cuando la 2 llega a su posición de reposo), así
-    // que la persona nunca alcanza a ver bien la foto final (el bebé) todavía sobre la
-    // tarjeta 1 — con medio ancho, termina a la mitad del gesto de deslizar a la
-    // tarjeta 2, mientras la 1 sigue cómodamente visible.
+    // El umbral es solo un CUARTO del ancho de la tarjeta. Ya se probó con la mitad
+    // (0.5) y en un swipe real (no un scroll lento y deliberado) seguía sintiéndose
+    // tarde: a velocidad normal el gesto entero pasa por el umbral en un instante y
+    // sigue de largo, así que hay que dejar el umbral bien dentro del recorrido de la
+    // tarjeta 1 para que la foto del bebé (niño) quede completamente visible mientras
+    // la tarjeta 1 todavía ocupa casi toda la pantalla — no a medio camino hacia la 2.
     gsap.set(photoBRef.current, { opacity: 0 });
 
     let threshold = 1;
     // En pantallas anchas la tira puede quedar centrada y (casi) sin overflow —
     // a veces sobra apenas un puñado de píxeles, imperceptible con mouse (no hay
-    // scrollbar visible). Exigir deslizar al menos un cuarto del ancho de tarjeta para
+    // scrollbar visible). Exigir deslizar al menos un octavo del ancho de tarjeta para
     // considerarla "deslizable" evita que quede congelada en la primera foto para
     // siempre en esos casos; con overflow real (el carrusel táctil) sí se activa.
     let isScrollable = true;
 
     const measure = () => {
-      threshold = Math.max(firstCard.offsetWidth * 0.5, 1);
+      threshold = Math.max(firstCard.offsetWidth * 0.25, 1);
       isScrollable = strip.scrollWidth - strip.clientWidth >= threshold * 0.5;
     };
 
