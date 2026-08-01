@@ -52,7 +52,7 @@ export default function MusicToggle() {
     <>
       <audio
         ref={audioRef}
-        src="/assets/song.m4a"
+        src="/assets/song.mp3"
         preload="auto"
         onEnded={handleEnded}
         onError={() => setHasError(true)}
@@ -64,9 +64,8 @@ export default function MusicToggle() {
         aria-label={isPlaying ? 'Pausar música' : 'Reproducir música'}
         aria-pressed={isPlaying}
         title={hasError ? 'Música no disponible' : undefined}
-        className={`fixed right-5 top-5 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-ink text-bone shadow-lg transition-opacity duration-300 disabled:cursor-not-allowed disabled:opacity-30 sm:right-8 sm:top-8 ${
-          !hasInteracted && !hasError ? 'motion-safe:animate-heartbeat' : ''
-        }`}
+        className={`fixed right-5 top-5 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-ink text-bone shadow-lg transition-opacity duration-300 disabled:cursor-not-allowed disabled:opacity-30 sm:right-8 sm:top-8 ${!hasInteracted && !hasError ? 'motion-safe:animate-heartbeat' : ''
+          }`}
       >
         {isPlaying ? (
           <svg
