@@ -28,6 +28,12 @@ export default function IntroStory() {
     if (reduceMotion) {
       gsap.set(flapRef.current, { transformOrigin: '50% 100%', rotateX: -92, opacity: 0 });
       gsap.set(cardRef.current, { yPercent: 0 });
+      // photo2 arranca con opacity-0 (clase estática en el JSX) porque normalmente solo
+      // se revela en el último tramo de la línea de tiempo — sin este set explícito,
+      // con motion reducida (que se salta toda la animación) se quedaría invisible para
+      // siempre y solo se vería photo1 (la pareja), nunca la foto del bautizo de Aylin.
+      gsap.set(photo1Ref.current, { opacity: 0 });
+      gsap.set(photo2Ref.current, { opacity: 1 });
       return undefined;
     }
 

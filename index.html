@@ -15,6 +15,17 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // TEMPORAL — solo para auditar el fallback de prefers-reduced-motion, se revierte
+      // después de la prueba. Fuerza matches:true para esa media query específica.
+      window.__origMatchMedia = window.matchMedia.bind(window);
+      window.matchMedia = (query) => {
+        if (query.includes('prefers-reduced-motion')) {
+          return { matches: true, media: query, addEventListener() {}, removeEventListener() {} };
+        }
+        return window.__origMatchMedia(query);
+      };
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
