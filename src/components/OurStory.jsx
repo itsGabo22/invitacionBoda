@@ -227,7 +227,14 @@ export default function OurStory() {
           // del más alto — con motion reducida la primera tarjeta puede crecer más
           // que las demás (dos fotos a su alto natural en vez de un aspect-[3/4]
           // fijo) y sin esto arrastraría a las otras 4 a estirarse con ella.
-          className="[&::-webkit-scrollbar]:hidden mt-10 flex items-start snap-x snap-mandatory gap-6 overflow-x-auto scroll-px-6 px-6 pb-4 sm:gap-10 sm:px-12 md:justify-center md:px-6"
+          //
+          // Sin gap-*: la separación entre tarjetas se da con margin-right explícito
+          // en cada figure (ver más abajo) en vez del gap del contenedor flex. La
+          // tarjeta 1 con motion reducida es la única con ancho w-fit (en vez de un
+          // ancho fijo como las demás) — para no apostarle a que el gap del flex se
+          // comporte igual con un ítem de ancho intrínseco que con uno de ancho fijo,
+          // la separación se resuelve igual para las 5, vía margin, no vía gap.
+          className="[&::-webkit-scrollbar]:hidden mt-10 flex items-start snap-x snap-mandatory overflow-x-auto scroll-px-6 px-6 pb-4 sm:px-12 md:justify-center md:px-6"
           style={{ scrollbarWidth: 'none' }}
         >
           {MOMENTS.map((moment, index) => (
@@ -237,9 +244,12 @@ export default function OurStory() {
               // Con motion reducida, la primera tarjeta deja de compartir el ancho fijo
               // de las demás (w-fit: se ensancha a lo que pidan sus dos fotos lado a
               // lado) — las otras 4 conservan su ancho normal sin cambio alguno.
+              // mr-6/sm:mr-10 en vez de gap-* del contenedor (ver arriba): así la
+              // separación con la tarjeta siguiente es la misma para las 5, sin
+              // depender de cómo el navegador calcule el gap para un ítem w-fit.
               className={`group shrink-0 snap-center ${
                 index === 0 && reduceMotion ? 'w-fit' : 'w-[74vw] max-w-[19rem] sm:w-64 md:w-56 lg:w-64'
-              } ${index % 2 === 1 ? 'sm:mt-8' : ''}`}
+              } ${index % 2 === 1 ? 'sm:mt-8' : ''} ${index < MOMENTS.length - 1 ? 'mr-6 sm:mr-10' : ''}`}
             >
               <div
                 ref={index === 0 ? firstCardRef : (index === 1 ? referenceCardRef : undefined)}
