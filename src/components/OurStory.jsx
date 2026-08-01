@@ -38,12 +38,36 @@ export default function OurStory() {
   const sectionRef = useRef(null);
   const stripRef = useRef(null);
   const firstCardRef = useRef(null);
+  const referenceCardRef = useRef(null);
   const photoARef = useRef(null);
   const photoBRef = useRef(null);
   // Se lee una sola vez al montar (igual que en el resto del sitio): con motion
-  // reducida, la primera tarjeta renderiza ambas fotos apiladas y estáticas en vez
-  // del par que se cruza con el scroll de la tira, así que ninguna se pierde.
+  // reducida, la primera tarjeta renderiza ambas fotos lado a lado y estáticas en
+  // vez del par que se cruza con el scroll de la tira, así que ninguna se pierde.
   const [reduceMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  // Con motion reducida la primera tarjeta se ensancha (dos fotos lado a lado en
+  // vez de una sola aspect-[3/4]) pero debe conservar el mismo alto que las otras
+  // 4 para no romper el ritmo de la tira. En vez de intentar adivinar ese alto con
+  // un aspect-ratio distinto por breakpoint, se mide el alto YA renderizado de una
+  // tarjeta normal (referenceCardRef, la segunda) y se aplica tal cual — exacto en
+  // cualquier ancho de viewport, no solo en los breakpoints previstos.
+  useLayoutEffect(() => {
+    if (!reduceMotion) return undefined;
+    const firstCard = firstCardRef.current;
+    const referenceCard = referenceCardRef.current;
+    if (!firstCard || !referenceCard) return undefined;
+
+    const syncHeight = () => {
+      firstCard.style.height = `${referenceCard.offsetHeight}px`;
+    };
+    syncHeight();
+
+    const resizeObserver = new ResizeObserver(syncHeight);
+    resizeObserver.observe(referenceCard);
+
+    return () => resizeObserver.disconnect();
+  }, [reduceMotion]);
 
   // useLayoutEffect (no useEffect): el listener de scroll queda enganchado ANTES
   // del primer paint, no después — reduce la ventana en la que un scroll real de
@@ -210,39 +234,44 @@ export default function OurStory() {
             <figure
               key={moment.src}
               data-stagger-item
-              className={`group w-[74vw] max-w-[19rem] shrink-0 snap-center sm:w-64 md:w-56 lg:w-64 ${index % 2 === 1 ? 'sm:mt-8' : ''
-                }`}
+              // Con motion reducida, la primera tarjeta deja de compartir el ancho fijo
+              // de las demás (w-fit: se ensancha a lo que pidan sus dos fotos lado a
+              // lado) — las otras 4 conservan su ancho normal sin cambio alguno.
+              className={`group shrink-0 snap-center ${
+                index === 0 && reduceMotion ? 'w-fit' : 'w-[74vw] max-w-[19rem] sm:w-64 md:w-56 lg:w-64'
+              } ${index % 2 === 1 ? 'sm:mt-8' : ''}`}
             >
               <div
-                ref={index === 0 ? firstCardRef : undefined}
-                // Con motion reducida, la primera tarjeta pierde el aspect-[3/4] fijo y
-                // el overflow-hidden: las dos fotos apiladas de abajo crecen a su alto
-                // natural (object-contain) en vez de recortarse a la caja de una sola.
+                ref={index === 0 ? firstCardRef : (index === 1 ? referenceCardRef : undefined)}
+                // Con motion reducida, la primera tarjeta pierde el aspect-[3/4] fijo:
+                // pasa a ser una fila (dos fotos lado a lado, como un solo cuadro
+                // combinado) con el alto fijado por JS igual al de una tarjeta normal
+                // (ver el efecto de arriba) y el ancho ajustado a su contenido.
                 className={`relative bg-stone/10 shadow-[0_18px_30px_-20px_rgba(22,21,19,0.45)] ring-1 ring-ink/10 transition-transform duration-500 ease-out group-hover:-translate-y-1 ${
-                  index === 0 && reduceMotion ? '' : 'aspect-[3/4] overflow-hidden'
+                  index === 0 && reduceMotion ? 'flex w-fit flex-row' : 'aspect-[3/4] overflow-hidden'
                 }`}
               >
                 {index === 0 ? (
                   reduceMotion ? (
                     // Motion reducida: nunca se anima el crossfade ligado al scroll de la
                     // tira, así que en vez de asentarse en una sola foto se muestran las
-                    // dos apiladas, cada una a su proporción natural (object-contain,
-                    // alto automático) para no recortar ninguna.
-                    <div className="flex w-full flex-col">
+                    // dos lado a lado, cada una a su proporción natural (object-contain,
+                    // ancho automático a partir del alto fijo) para no recortar ninguna.
+                    <>
                       <img
                         src="/assets/historia-01.png"
                         alt={moment.alt}
                         loading="lazy"
-                        className="h-auto w-full object-contain grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                        className="h-full w-auto object-contain grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
                       />
-                      <span aria-hidden="true" className="h-px w-full bg-bone/60" />
+                      <span aria-hidden="true" className="h-full w-px shrink-0 bg-bone/60" />
                       <img
                         src="/assets/historia-01-b.png"
                         alt={moment.alt}
                         loading="lazy"
-                        className="h-auto w-full object-contain grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                        className="h-full w-auto object-contain grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
                       />
-                    </div>
+                    </>
                   ) : (
                     <>
                       <img
