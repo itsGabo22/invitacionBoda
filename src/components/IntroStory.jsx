@@ -1,7 +1,8 @@
-import { useEffect, useId, useRef } from 'react';
+import { useCallback, useEffect, useId, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SectionTexture from './SectionTexture.jsx';
+import useRevealFailsafe from '../hooks/useRevealFailsafe.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -22,59 +23,92 @@ export default function IntroStory() {
   const photo1Ref = useRef(null);
   const photo2Ref = useRef(null);
 
+  // Estado final "de verdad" del anuncio (sobre abierto, foto del bautizo visible):
+  // lo usan tanto la rama de motion reducida como la red de seguridad de más abajo,
+  // para no repetir la misma lista de valores en dos sitios.
+  const applyFinalState = useCallback(() => {
+    gsap.set(flapRef.current, { transformOrigin: '50% 100%', rotateX: -92, opacity: 0 });
+    gsap.set(cardRef.current, { yPercent: 0 });
+    gsap.set(photo1Ref.current, { opacity: 0 });
+    gsap.set(photo2Ref.current, { opacity: 1 });
+  }, []);
+
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (reduceMotion) {
-      gsap.set(flapRef.current, { transformOrigin: '50% 100%', rotateX: -92, opacity: 0 });
-      gsap.set(cardRef.current, { yPercent: 0 });
-      // photo2 arranca con opacity-0 (clase estática en el JSX) porque normalmente solo
-      // se revela en el último tramo de la línea de tiempo — sin este set explícito,
-      // con motion reducida (que se salta toda la animación) se quedaría invisible para
-      // siempre y solo se vería photo1 (la pareja), nunca la foto del bautizo de Celeste.
-      gsap.set(photo1Ref.current, { opacity: 0 });
-      gsap.set(photo2Ref.current, { opacity: 1 });
+      applyFinalState();
       return undefined;
     }
 
-    const ctx = gsap.context(() => {
-      // Estado inicial: la tarjeta empieza desplazada hacia arriba exactamente su propia
-      // altura (yPercent: -100), de modo que su borde inferior quede justo en la línea de
-      // la solapa (24% del stage) — completamente oculta, en parte por el overflow-hidden
-      // del stage y en parte por la solapa (con fondo bone) que la tapa.
-      gsap.set(flapRef.current, { transformOrigin: '50% 100%' });
-      gsap.set(cardRef.current, { yPercent: -100 });
+    // Por defecto (marcado/CSS, sin tocar nada de JS) photo1 y photo2 son ambas
+    // visibles — photo2 va después en el DOM, así que sin animación se ve ELLA
+    // directamente (el estado final), no un hueco en blanco. Todo lo de acá abajo
+    // solo AGREGA el "empieza oculta, se revela con el scroll" — nunca al revés — y
+    // va envuelto en try/catch: si gsap/ScrollTrigger truena al armar esto por lo
+    // que sea (móvil raro, error de carga, lo que sea), no queda nada oculto porque
+    // nunca llegamos a ocultarlo; el contenido por defecto ya es visible.
+    let ctx;
+    try {
+      ctx = gsap.context(() => {
+        // Estado inicial: la tarjeta empieza desplazada hacia arriba exactamente su propia
+        // altura (yPercent: -100), de modo que su borde inferior quede justo en la línea de
+        // la solapa (24% del stage) — completamente oculta, en parte por el overflow-hidden
+        // del stage y en parte por la solapa (con fondo bone) que la tapa. photo2 se oculta
+        // aquí también, SOLO ahora que el resto de esta configuración (el timeline con su
+        // scrollTrigger) se armó sin tronar.
+        gsap.set(flapRef.current, { transformOrigin: '50% 100%' });
+        gsap.set(cardRef.current, { yPercent: -100 });
+        gsap.set(photo2Ref.current, { opacity: 0 });
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: envelopeRef.current,
-          start: 'top 80%',
-          end: 'top 20%',
-          scrub: 0.6,
-        },
-      });
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: envelopeRef.current,
+            start: 'top 80%',
+            end: 'top 20%',
+            scrub: 0.6,
+          },
+        });
 
-      // Secuencia: el sobre se abre primero; la tarjeta empieza a salir a medio abrir
-      // (no espera a que la solapa termine) y sigue deslizándose después de que la
-      // solapa se detiene, para que se lea "se abre, luego sale la tarjeta" en vez de
-      // dos animaciones simultáneas y caóticas.
-      // Nota: -172° (casi una vuelta completa) tenía sentido cuando la solapa solo tapaba
-      // una foto estática de su mismo tamaño — pero con la tarjeta deslizándose, pasar de
-      // -90° hace que la solapa "regrese" proyectada hacia abajo y se monte sobre la
-      // tarjeta. Se detiene apenas pasada la perpendicular (-92°, silueta mínima) y además
-      // se desvanece: como la tarjeta sigue deslizándose un rato después de que la solapa
-      // termina de girar, incluso una silueta residual mínima podría cruzar la foto
-      // mientras tanto — el fade a opacity:0 lo evita del todo, sin depender de que la
-      // geometría 3D caiga en un ángulo exacto.
-      tl.to(flapRef.current, { rotateX: -92, ease: 'power2.inOut', duration: 0.7 })
-        .to(flapRef.current, { opacity: 0, ease: 'power1.in', duration: 0.25 }, 0.5)
-        .to(cardRef.current, { yPercent: 0, ease: 'power2.inOut', duration: 0.9 }, 0.45)
-        .to(photo1Ref.current, { opacity: 0, ease: 'none', duration: 0.35 }, 1.35)
-        .to(photo2Ref.current, { opacity: 1, ease: 'none', duration: 0.35 }, 1.35);
-    }, sectionRef);
+        // Secuencia: el sobre se abre primero; la tarjeta empieza a salir a medio abrir
+        // (no espera a que la solapa termine) y sigue deslizándose después de que la
+        // solapa se detiene, para que se lea "se abre, luego sale la tarjeta" en vez de
+        // dos animaciones simultáneas y caóticas.
+        // Nota: -172° (casi una vuelta completa) tenía sentido cuando la solapa solo tapaba
+        // una foto estática de su mismo tamaño — pero con la tarjeta deslizándose, pasar de
+        // -90° hace que la solapa "regrese" proyectada hacia abajo y se monte sobre la
+        // tarjeta. Se detiene apenas pasada la perpendicular (-92°, silueta mínima) y además
+        // se desvanece: como la tarjeta sigue deslizándose un rato después de que la solapa
+        // termina de girar, incluso una silueta residual mínima podría cruzar la foto
+        // mientras tanto — el fade a opacity:0 lo evita del todo, sin depender de que la
+        // geometría 3D caiga en un ángulo exacto.
+        tl.to(flapRef.current, { rotateX: -92, ease: 'power2.inOut', duration: 0.7 })
+          .to(flapRef.current, { opacity: 0, ease: 'power1.in', duration: 0.25 }, 0.5)
+          .to(cardRef.current, { yPercent: 0, ease: 'power2.inOut', duration: 0.9 }, 0.45)
+          .to(photo1Ref.current, { opacity: 0, ease: 'none', duration: 0.35 }, 1.35)
+          .to(photo2Ref.current, { opacity: 1, ease: 'none', duration: 0.35 }, 1.35);
+      }, sectionRef);
+    } catch {
+      ctx = null;
+    }
 
-    return () => ctx.revert();
-  }, []);
+    return () => ctx?.revert();
+  }, [applyFinalState]);
+
+  // Red de seguridad: el timeline de arriba es un scrub ligado al scroll — si por lo
+  // que sea (rAF/ticker en pausa por ahorro de batería, scroll que deja de disparar
+  // eventos, cualquier causa) se queda a medio camino después de que la sección lleva
+  // un buen rato a la vista, esto fuerza el estado final directamente, sin pasar por
+  // el ticker de GSAP en absoluto (ver revealFailsafe.js).
+  const forceIntroReveal = useCallback(() => {
+    const flapOpacity = flapRef.current && Number(getComputedStyle(flapRef.current).opacity);
+    const photo2Opacity = photo2Ref.current && Number(getComputedStyle(photo2Ref.current).opacity);
+    if (flapOpacity > 0.05 || photo2Opacity < 0.95) {
+      applyFinalState();
+    }
+  }, [applyFinalState]);
+
+  useRevealFailsafe(sectionRef, forceIntroReveal);
 
   return (
     <section
@@ -144,7 +178,7 @@ export default function IntroStory() {
                   ref={photo2Ref}
                   src="/assets/sobre-foto-02.png"
                   alt="El bautizo de Celeste"
-                  className="absolute inset-0 h-full w-full object-cover opacity-0"
+                  className="absolute inset-0 h-full w-full object-cover"
                   style={{ objectPosition: '50% 10%' }}
                 />
                 <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-bone/20" />

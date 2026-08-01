@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import SectionTexture from './SectionTexture.jsx';
+import useRevealFailsafe from '../hooks/useRevealFailsafe.js';
 
 // Cinco momentos, en orden cronológico. Las fotos reales se colocan en
 // /public/assets/historia-01.png … historia-05.png; los textos son
@@ -66,8 +67,14 @@ export default function OurStory() {
     // sigue de largo, así que hay que dejar el umbral bien dentro del recorrido de la
     // tarjeta 1 para que la foto del bebé (niño) quede completamente visible mientras
     // la tarjeta 1 todavía ocupa casi toda la pantalla — no a medio camino hacia la 2.
-    gsap.set(photoBRef.current, { opacity: 0 });
-
+    //
+    // photoB NO se oculta aquí de entrada. Por defecto (className, sin clase de
+    // opacity-0) ya es visible — va después de photoA en el DOM, así que sin JS se ve
+    // ELLA directamente. Solo se oculta la PRIMERA VEZ que de verdad llega un evento de
+    // scroll real de la tira: eso confirma que el mecanismo está vivo antes de
+    // apostarle nada a que siga estándolo. Si el listener de scroll nunca llega a
+    // disparar (el mismo tipo de bug reportado), photoB se queda en su estado visible
+    // por defecto en vez de congelada en opacity:0 para siempre.
     let threshold = 1;
     // En pantallas anchas la tira puede quedar centrada y (casi) sin overflow —
     // a veces sobra apenas un puñado de píxeles, imperceptible con mouse (no hay
@@ -87,21 +94,41 @@ export default function OurStory() {
     };
 
     measure();
-    updateFade();
 
     const resizeObserver = new ResizeObserver(() => {
       measure();
-      updateFade();
+      // Solo re-aplica el fade tras un resize si el carrusel ya demostró estar vivo
+      // (ver onScroll) — antes de eso no hay nada que recalcular, photoB sigue en su
+      // valor visible por defecto.
+      if (strip.dataset.scrollProven) updateFade();
     });
     resizeObserver.observe(strip);
 
-    strip.addEventListener('scroll', updateFade, { passive: true });
+    const onScroll = () => {
+      strip.dataset.scrollProven = 'true';
+      updateFade();
+    };
+    strip.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
       resizeObserver.disconnect();
-      strip.removeEventListener('scroll', updateFade);
+      strip.removeEventListener('scroll', onScroll);
+      delete strip.dataset.scrollProven;
     };
   }, []);
+
+  // Red de seguridad: si el carrusel nunca demuestra estar vivo (el listener de
+  // scroll arriba nunca dispara — batería/rAF/lo que sea) pero la sección lleva un
+  // buen rato a la vista, fuerza photoB a visible directamente. No debería activarse
+  // en un dispositivo sano, donde el usuario ya desliza la tira mucho antes.
+  const forcePhotoBReveal = useCallback(() => {
+    const opacity = photoBRef.current && Number(getComputedStyle(photoBRef.current).opacity);
+    if (opacity < 0.95) {
+      gsap.set(photoBRef.current, { opacity: 1 });
+    }
+  }, []);
+
+  useRevealFailsafe(sectionRef, forcePhotoBReveal);
 
   return (
     <section

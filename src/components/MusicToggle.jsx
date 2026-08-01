@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 
-const START_TIME = 20;
-
 export default function MusicToggle() {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -11,8 +9,6 @@ export default function MusicToggle() {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
-    audio.currentTime = START_TIME;
 
     audio
       .play()
@@ -27,7 +23,7 @@ export default function MusicToggle() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.currentTime = START_TIME;
+    audio.currentTime = 0;
     audio
       .play()
       .then(() => setIsPlaying(true))
@@ -56,7 +52,7 @@ export default function MusicToggle() {
     <>
       <audio
         ref={audioRef}
-        src="/assets/song.mp3"
+        src="/assets/song.m4a"
         preload="auto"
         onEnded={handleEnded}
         onError={() => setHasError(true)}
