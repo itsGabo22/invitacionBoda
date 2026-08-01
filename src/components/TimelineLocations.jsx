@@ -323,9 +323,10 @@ export default function TimelineLocations() {
                     sin descubrir el fondo en ninguno de los dos bordes del marco. */}
                 <img
                   ref={flowerRef}
-                  src="/assets/flor-itinerario.png"
+                  src="/assets/flor-itinerario.webp"
                   alt=""
                   aria-hidden="true"
+                  loading="lazy"
                   style={{ width: itineraryHeight }}
                   className="absolute left-1/2 top-1/2 h-[299px] max-w-none object-fill opacity-80 sm:h-[449px] md:h-[541px]"
                 />

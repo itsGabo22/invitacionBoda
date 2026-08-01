@@ -10,6 +10,7 @@ export default function Hero() {
         <img
           src="/assets/portada-placeholder.webp"
           alt="Esteban, Natalia y Celeste, la familia que celebra su historia"
+          fetchpriority="high"
           className="h-full w-full scale-110 object-cover object-[80%_center]"
         />
         <div className="absolute inset-0 bg-ink/30" />

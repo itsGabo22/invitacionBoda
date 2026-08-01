@@ -93,6 +93,7 @@ function Silhouette({ variants, alt, label, selected, dimmed, onSelect }) {
             <img
               src={variants[variantIndex]}
               alt=""
+              loading="lazy"
               onError={() => setFailed(true)}
               className={`h-full w-full object-contain object-bottom transition-[filter,transform] duration-500 ease-out ${
                 selected
@@ -150,7 +151,7 @@ export default function DressCode() {
         <div data-stagger-group className="mx-auto mt-12 flex items-start justify-center gap-8 sm:gap-12">
           <div data-stagger-item>
             <Silhouette
-              variants={['/assets/silueta-traje.png', '/assets/silueta-traje-02.png']}
+              variants={['/assets/silueta-traje.webp', '/assets/silueta-traje-02.webp']}
               alt="Silueta de traje formal para caballero"
               label="Traje formal"
               selected={selected === 'traje'}
@@ -160,7 +161,7 @@ export default function DressCode() {
           </div>
           <div data-stagger-item>
             <Silhouette
-              variants={['/assets/silueta-vestido.png', '/assets/silueta-vestido-02.png']}
+              variants={['/assets/silueta-vestido.webp', '/assets/silueta-vestido-02.webp']}
               alt="Silueta de vestido formal para dama"
               label="Vestido formal"
               selected={selected === 'vestido'}

@@ -129,9 +129,10 @@ export default function IntroStory() {
         <div className="relative mx-auto w-full max-w-md">
           {/* Flor: elemento decorativo focal, asoma tras la esquina del sobre */}
           <img
-            src="/assets/flor-sobre.png"
+            src="/assets/flor-sobre.webp"
             alt=""
             aria-hidden="true"
+            loading="lazy"
             className="pointer-events-none absolute -bottom-6 -left-8 z-0 h-28 w-28 -rotate-[4deg] object-contain sm:-bottom-8 sm:-left-10 sm:h-40 sm:w-40 md:-bottom-12 md:-left-16 md:h-56 md:w-56"
           />
 
@@ -189,14 +190,16 @@ export default function IntroStory() {
                   // (object-contain, alto automático) para no recortar ninguna.
                   <div className="flex w-full flex-col">
                     <img
-                      src="/assets/sobre-foto-01.png"
+                      src="/assets/sobre-foto-01.webp"
                       alt="Esteban y Natalia, retrato de pareja"
+                      loading="lazy"
                       className="h-auto w-full object-contain"
                     />
                     <span aria-hidden="true" className="h-px w-full bg-champagne/60" />
                     <img
-                      src="/assets/sobre-foto-02.png"
+                      src="/assets/sobre-foto-02.webp"
                       alt="El bautizo de Celeste"
+                      loading="lazy"
                       className="h-auto w-full object-contain"
                     />
                   </div>
@@ -204,15 +207,17 @@ export default function IntroStory() {
                   <>
                     <img
                       ref={photo1Ref}
-                      src="/assets/sobre-foto-01.png"
+                      src="/assets/sobre-foto-01.webp"
                       alt="Esteban y Natalia, retrato de pareja"
+                      loading="lazy"
                       className="absolute inset-0 h-full w-full object-cover"
                       style={{ objectPosition: '50% 10%' }}
                     />
                     <img
                       ref={photo2Ref}
-                      src="/assets/sobre-foto-02.png"
+                      src="/assets/sobre-foto-02.webp"
                       alt="El bautizo de Celeste"
+                      loading="lazy"
                       className="absolute inset-0 h-full w-full object-cover"
                       style={{ objectPosition: '50% 10%' }}
                     />

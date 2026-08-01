@@ -4,31 +4,31 @@ import SectionTexture from './SectionTexture.jsx';
 import useRevealFailsafe from '../hooks/useRevealFailsafe.js';
 
 // Cinco momentos, en orden cronológico. Las fotos reales se colocan en
-// /public/assets/historia-01.png … historia-05.png; los textos son
+// /public/assets/historia-01.webp … historia-05.webp; los textos son
 // placeholders editoriales a afinar más adelante.
 const MOMENTS = [
   {
-    src: '/assets/historia-01.png',
+    src: '/assets/historia-01.webp',
     alt: 'Esteban y Natalia en una noche especial juntos',
     caption: 'El comienzo',
   },
   {
-    src: '/assets/historia-02.png',
+    src: '/assets/historia-02.webp',
     alt: 'Retratos individuales de Esteban y de Natalia',
     caption: 'Caminos que se encontraron',
   },
   {
-    src: '/assets/historia-03.png',
+    src: '/assets/historia-03.webp',
     alt: 'Natalia en la dulce espera de Celeste',
     caption: 'Esperándote',
   },
   {
-    src: '/assets/historia-04.png',
+    src: '/assets/historia-04.webp',
     alt: 'El bautizo de Celeste',
     caption: 'Nuestra bendición',
   },
   {
-    src: '/assets/historia-05.png',
+    src: '/assets/historia-05.webp',
     alt: 'Esteban, Natalia y Celeste, la familia completa',
     caption: 'Nuestra familia',
   },
@@ -231,16 +231,18 @@ export default function OurStory() {
 
       {/* Flor: acento de esquina, marca el inicio de la sección sin invadir el encabezado */}
       <img
-        src="/assets/flor-historia.png"
+        src="/assets/flor-historia.webp"
         alt=""
         aria-hidden="true"
+        loading="lazy"
         className="pointer-events-none absolute -top-4 left-0 z-0 w-40 object-contain opacity-90 sm:w-56 md:w-72"
       />
       {/* Misma flor, reflejada, como acento simétrico en la esquina opuesta */}
       <img
-        src="/assets/flor-historia.png"
+        src="/assets/flor-historia.webp"
         alt=""
         aria-hidden="true"
+        loading="lazy"
         className="pointer-events-none absolute -top-4 right-0 z-0 w-40 object-contain opacity-90 [transform:scaleX(-1)] sm:w-56 md:w-72"
       />
 
@@ -312,14 +314,14 @@ export default function OurStory() {
                     // ancho automático a partir del alto fijo) para no recortar ninguna.
                     <>
                       <img
-                        src="/assets/historia-01.png"
+                        src="/assets/historia-01.webp"
                         alt={moment.alt}
                         loading="lazy"
                         className="h-full w-auto object-contain grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
                       />
                       <span aria-hidden="true" className="h-full w-px shrink-0 bg-bone/60" />
                       <img
-                        src="/assets/historia-01-b.png"
+                        src="/assets/historia-01-b.webp"
                         alt={moment.alt}
                         loading="lazy"
                         className="h-full w-auto object-contain grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
@@ -332,7 +334,7 @@ export default function OurStory() {
                           la tira lo suficiente. */}
                       <img
                         ref={photoARef}
-                        src="/assets/historia-01-b.png"
+                        src="/assets/historia-01-b.webp"
                         alt={moment.alt}
                         loading="lazy"
                         className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
@@ -343,7 +345,7 @@ export default function OurStory() {
                           tira. */}
                       <img
                         ref={photoBRef}
-                        src="/assets/historia-01.png"
+                        src="/assets/historia-01.webp"
                         alt={moment.alt}
                         loading="lazy"
                         className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out will-change-[opacity] group-hover:grayscale-0"
