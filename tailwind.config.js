@@ -14,6 +14,7 @@ export default {
         display: ['"Bodoni Moda"', 'serif'],
         accent: ['"Playfair Display"', 'serif'],
         utility: ['"Jost"', 'sans-serif'],
+        goudy: ['"Goudy Bookletter 1911"', 'serif'],
       },
       keyframes: {
         // Lub-dub: dos golpes (uno fuerte, uno más suave) y una pausa larga, no un
