@@ -52,21 +52,64 @@ export default function OurStory() {
   // un aspect-ratio distinto por breakpoint, se mide el alto YA renderizado de una
   // tarjeta normal (referenceCardRef, la segunda) y se aplica tal cual — exacto en
   // cualquier ancho de viewport, no solo en los breakpoints previstos.
+  //
+  // El ancho de cada foto (y por lo tanto el de la tarjeta, w-fit) NO puede
+  // dejarse en manos de w-auto + h-full (%) + object-contain, ni tampoco basta con
+  // fijar el ancho de cada <img> en px y confiar en que w-fit del contenedor sume
+  // ese resultado: en la práctica (probado con dos iframes, uno a 380px y otro a
+  // 1200px) el w-fit de la tarjeta — que a su vez es un ítem flex de la tira, con
+  // flex-basis resuelto vía una pasada de cálculo de contenido "de máxima
+  // preferencia" — terminaba usando un ancho bastante menor que la suma real de
+  // las fotos ya redimensionadas, y estas se desbordaban por encima de la tarjeta
+  // siguiente aunque el gap entre las CAJAS ya midiera bien los mismos 40px que
+  // entre el resto. Por eso el ancho final (alto compartido × ratio de cada foto,
+  // más 1px del separador) se calcula en JS y se fija con estilo inline tanto en
+  // la tarjeta como en su figure — nunca dependiendo de que fit-content lo infiera
+  // correctamente a partir de contenido que cambia después del primer layout.
   useLayoutEffect(() => {
     if (!reduceMotion) return undefined;
     const firstCard = firstCardRef.current;
     const referenceCard = referenceCardRef.current;
-    if (!firstCard || !referenceCard) return undefined;
+    const figure = firstCard?.parentElement;
+    if (!firstCard || !referenceCard || !figure) return undefined;
 
-    const syncHeight = () => {
-      firstCard.style.height = `${referenceCard.offsetHeight}px`;
+    const DIVIDER_WIDTH = 1;
+    const images = Array.from(firstCard.querySelectorAll('img'));
+
+    const sync = () => {
+      const height = referenceCard.offsetHeight;
+      firstCard.style.height = `${height}px`;
+
+      if (!images.every((img) => img.naturalWidth > 0 && img.naturalHeight > 0)) return;
+
+      let totalWidth = DIVIDER_WIDTH;
+      images.forEach((img) => {
+        const width = (height * img.naturalWidth) / img.naturalHeight;
+        img.style.width = `${width}px`;
+        totalWidth += width;
+      });
+      firstCard.style.width = `${totalWidth}px`;
+      figure.style.width = `${totalWidth}px`;
     };
-    syncHeight();
+    sync();
 
-    const resizeObserver = new ResizeObserver(syncHeight);
+    // Si alguna foto todavía no había cargado al momento de sync(), su ancho
+    // natural no estaba disponible todavía — se recalcula en cuanto termine de
+    // cargar, sin esperar a un resize para corregirlo.
+    const pendingImages = images.filter((img) => !(img.naturalWidth > 0));
+    const loadListeners = pendingImages.map((img) => {
+      const onLoad = () => sync();
+      img.addEventListener('load', onLoad);
+      return [img, onLoad];
+    });
+
+    const resizeObserver = new ResizeObserver(sync);
     resizeObserver.observe(referenceCard);
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      resizeObserver.disconnect();
+      loadListeners.forEach(([img, onLoad]) => img.removeEventListener('load', onLoad));
+    };
   }, [reduceMotion]);
 
   // useLayoutEffect (no useEffect): el listener de scroll queda enganchado ANTES
