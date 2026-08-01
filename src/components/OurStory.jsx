@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import SectionTexture from './SectionTexture.jsx';
 import useRevealFailsafe from '../hooks/useRevealFailsafe.js';
@@ -45,7 +45,11 @@ export default function OurStory() {
   // del par que se cruza con el scroll de la tira, así que ninguna se pierde.
   const [reduceMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-  useEffect(() => {
+  // useLayoutEffect (no useEffect): el listener de scroll queda enganchado ANTES
+  // del primer paint, no después — reduce la ventana en la que un scroll real de
+  // la tira (p. ej. una corrección de snap del navegador) pudiera ocurrir antes de
+  // que este efecto llegue a atarlo.
+  useLayoutEffect(() => {
     if (reduceMotion) {
       // Con motion reducida el JSX de más abajo ya renderiza ambas fotos apiladas
       // en vez del par superpuesto photoA/photoB — no hay nada que fijar aquí.
@@ -97,6 +101,20 @@ export default function OurStory() {
     };
 
     measure();
+
+    // Corrige de una sola vez, de forma síncrona y ANTES del primer paint, si la
+    // tira ya llegó con scrollLeft distinto de 0 (restauración de scroll del
+    // navegador, corrección de snap, lo que sea) — sin esto, photoB se queda en
+    // su opacidad visible por defecto hasta que el listener de más abajo alcance
+    // a dispararse, y entonces "corrige" de un salto en vez de haber arrancado ya
+    // en el valor correcto: ese hueco es el flash reportado. Solo corrige cuando
+    // hay evidencia real (scrollLeft > 0) — con scrollLeft en 0 (el caso normal)
+    // esto no hace nada, photoB sigue en su default visible como debe ser mientras
+    // el scroll no demuestre estar vivo.
+    if (strip.scrollLeft > 0) {
+      strip.dataset.scrollProven = 'true';
+      updateFade();
+    }
 
     const resizeObserver = new ResizeObserver(() => {
       measure();
@@ -181,7 +199,11 @@ export default function OurStory() {
         <div
           ref={stripRef}
           data-stagger-group
-          className="[&::-webkit-scrollbar]:hidden mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-px-6 px-6 pb-4 sm:gap-10 sm:px-12 md:justify-center md:px-6"
+          // items-start: por defecto un flex row estira todos los items a la altura
+          // del más alto — con motion reducida la primera tarjeta puede crecer más
+          // que las demás (dos fotos a su alto natural en vez de un aspect-[3/4]
+          // fijo) y sin esto arrastraría a las otras 4 a estirarse con ella.
+          className="[&::-webkit-scrollbar]:hidden mt-10 flex items-start snap-x snap-mandatory gap-6 overflow-x-auto scroll-px-6 px-6 pb-4 sm:gap-10 sm:px-12 md:justify-center md:px-6"
           style={{ scrollbarWidth: 'none' }}
         >
           {MOMENTS.map((moment, index) => (
@@ -193,27 +215,32 @@ export default function OurStory() {
             >
               <div
                 ref={index === 0 ? firstCardRef : undefined}
-                className="relative aspect-[3/4] overflow-hidden bg-stone/10 shadow-[0_18px_30px_-20px_rgba(22,21,19,0.45)] ring-1 ring-ink/10 transition-transform duration-500 ease-out group-hover:-translate-y-1"
+                // Con motion reducida, la primera tarjeta pierde el aspect-[3/4] fijo y
+                // el overflow-hidden: las dos fotos apiladas de abajo crecen a su alto
+                // natural (object-contain) en vez de recortarse a la caja de una sola.
+                className={`relative bg-stone/10 shadow-[0_18px_30px_-20px_rgba(22,21,19,0.45)] ring-1 ring-ink/10 transition-transform duration-500 ease-out group-hover:-translate-y-1 ${
+                  index === 0 && reduceMotion ? '' : 'aspect-[3/4] overflow-hidden'
+                }`}
               >
                 {index === 0 ? (
                   reduceMotion ? (
                     // Motion reducida: nunca se anima el crossfade ligado al scroll de la
                     // tira, así que en vez de asentarse en una sola foto se muestran las
-                    // dos apiladas — el par completo, sin recortar ninguna a una franja
-                    // angosta como pasaría lado a lado en esta tarjeta (aspect 3/4).
-                    <div className="flex h-full w-full flex-col">
+                    // dos apiladas, cada una a su proporción natural (object-contain,
+                    // alto automático) para no recortar ninguna.
+                    <div className="flex w-full flex-col">
                       <img
                         src="/assets/historia-01.png"
                         alt={moment.alt}
                         loading="lazy"
-                        className="h-1/2 w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                        className="h-auto w-full object-contain grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
                       />
                       <span aria-hidden="true" className="h-px w-full bg-bone/60" />
                       <img
                         src="/assets/historia-01-b.png"
                         alt={moment.alt}
                         loading="lazy"
-                        className="h-1/2 w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                        className="h-auto w-full object-contain grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
                       />
                     </div>
                   ) : (

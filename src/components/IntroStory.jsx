@@ -137,7 +137,11 @@ export default function IntroStory() {
 
           <div
             ref={envelopeRef}
-            className="relative z-10 aspect-[4/5] w-full overflow-hidden"
+            // Con motion reducida el stage deja de tener alto fijo (aspect-[4/5]) y de
+            // recortar overflow: la tarjeta de abajo ya no es un rectángulo con crop
+            // fijo, sino dos fotos apiladas a su alto natural, así que este contenedor
+            // necesita poder crecer para no recortarlas.
+            className={`relative z-10 w-full ${reduceMotion ? '' : 'aspect-[4/5] overflow-hidden'}`}
             style={{ perspective: '1400px' }}
           >
             {/* Silueta del sobre: cuerpo + solapa, 100% decorativa. Ya no contiene ni
@@ -169,28 +173,31 @@ export default function IntroStory() {
                 de la solapa, así que yPercent:-100 la esconde del todo por encima de ella. */}
             <div
               ref={cardRef}
-              className="absolute left-[13%] top-[24%] z-10 w-[74%] aspect-[4/5] bg-bone p-2 shadow-[0_18px_30px_-20px_rgba(22,21,19,0.45)] ring-1 ring-ink/10 will-change-transform"
+              // Con motion reducida la tarjeta deja de ser un rectángulo de alto fijo
+              // (aspect-[4/5]) posicionado en absoluto sobre el stage — pasa a fluir
+              // normalmente (relative + margin-top) para que su alto real (dos fotos a
+              // su proporción natural) empuje el alto del stage en vez de desbordarlo.
+              className={`z-10 w-[74%] bg-bone p-2 shadow-[0_18px_30px_-20px_rgba(22,21,19,0.45)] ring-1 ring-ink/10 will-change-transform ${
+                reduceMotion ? 'relative mx-auto mt-[15%]' : 'absolute left-[13%] top-[24%] aspect-[4/5]'
+              }`}
             >
-              <div className="relative h-full w-full overflow-hidden">
+              <div className={`relative w-full ${reduceMotion ? '' : 'h-full overflow-hidden'}`}>
                 {reduceMotion ? (
                   // Motion reducida: nunca se anima un crossfade, así que en vez de
-                  // asentarse en una sola foto se muestran las dos apiladas — el
-                  // par completo (pareja + bautizo), sin recortar ninguna a una
-                  // franja demasiado angosta como pasaría lado a lado en una
-                  // tarjeta este de alta (aspect 4/5).
-                  <div className="flex h-full w-full flex-col">
+                  // asentarse en una sola foto se muestran las dos apiladas — el par
+                  // completo (pareja + bautizo), cada una a su proporción natural
+                  // (object-contain, alto automático) para no recortar ninguna.
+                  <div className="flex w-full flex-col">
                     <img
                       src="/assets/sobre-foto-01.png"
                       alt="Esteban y Natalia, retrato de pareja"
-                      className="h-1/2 w-full object-cover"
-                      style={{ objectPosition: '50% 15%' }}
+                      className="h-auto w-full object-contain"
                     />
                     <span aria-hidden="true" className="h-px w-full bg-champagne/60" />
                     <img
                       src="/assets/sobre-foto-02.png"
                       alt="El bautizo de Celeste"
-                      className="h-1/2 w-full object-cover"
-                      style={{ objectPosition: '50% 15%' }}
+                      className="h-auto w-full object-contain"
                     />
                   </div>
                 ) : (
