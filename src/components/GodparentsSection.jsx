@@ -17,9 +17,25 @@ export default function GodparentsSection() {
           En compañía de nuestros padrinos
         </p>
         <span aria-hidden="true" className="mx-auto mt-8 block h-px w-16 bg-champagne" />
-        <p className="mt-8 font-accent text-3xl italic text-ink sm:text-4xl">
-          Carlos Paz y Nidia Guerrero
-        </p>
+
+        <div className="mt-10 space-y-8">
+          <div>
+            <p className="font-utility text-[11px] font-medium uppercase tracking-[0.35em] text-stone">
+              Padrinos de matrimonio
+            </p>
+            <p className="mt-3 font-accent text-3xl italic text-ink sm:text-4xl">
+              Carlos Paz y Nidia Guerrero
+            </p>
+          </div>
+          <div>
+            <p className="font-utility text-[11px] font-medium uppercase tracking-[0.35em] text-stone">
+              Padrinos de bautizo
+            </p>
+            <p className="mt-3 font-accent text-3xl italic text-ink sm:text-4xl">
+              David Botina y Andrea Muñoz
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );
