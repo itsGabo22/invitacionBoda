@@ -6,11 +6,11 @@ export default function Hero() {
       className="relative flex min-h-screen w-full flex-col justify-between overflow-hidden bg-ink"
     >
       {/* Fotografía editorial: capa de parallax, se mueve en translateY vía GSAP */}
-      <div data-parallax="14" className="absolute inset-0 will-change-transform">
+      <div data-parallax="24" className="absolute inset-0 will-change-transform">
         <img
           src="/assets/portada-placeholder.webp"
           alt="Esteban, Natalia y Aylin, la familia que celebra su historia"
-          className="h-full w-full scale-105 object-cover object-center"
+          className="h-full w-full scale-110 object-cover object-center"
         />
         <div className="absolute inset-0 bg-ink/30" />
         <div className="absolute inset-0 bg-gradient-to-b from-ink/55 via-transparent to-ink/70" />

@@ -229,7 +229,7 @@ export default function TimelineLocations() {
       // data-parallax en useWeddingAnimations.js para el parallax vertical, solo
       // que aplicado al eje X en vez de yPercent.
       gsap.to(flowerRef.current, {
-        xPercent: -55,
+        xPercent: -66,
         ease: 'none',
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -298,17 +298,17 @@ export default function TimelineLocations() {
                   rotación. Va primero en el DOM para que el texto de cada <li> pinte
                   encima. */}
               <div className="pointer-events-none absolute -right-14 top-0 z-0 h-full w-[130px] overflow-hidden sm:w-[195px] md:w-[235px]">
-                {/* Ancho (h-[…], que tras rotar 90° se vuelve el ancho visible) ~1.65x el
+                {/* Ancho (h-[…], que tras rotar 90° se vuelve el ancho visible) ~2.3x el
                     marco: el sobrante queda oculto por el overflow-hidden del marco y le da
-                    margen para derivar en X (ver el gsap.to de arriba) sin descubrir el
-                    fondo en ninguno de los dos bordes del marco. */}
+                    margen para derivar en X (ver el gsap.to de arriba, xPercent -50→-66)
+                    sin descubrir el fondo en ninguno de los dos bordes del marco. */}
                 <img
                   ref={flowerRef}
                   src="/assets/flor-itinerario.png"
                   alt=""
                   aria-hidden="true"
                   style={{ width: itineraryHeight }}
-                  className="absolute left-1/2 top-1/2 h-[215px] max-w-none object-fill opacity-80 sm:h-[322px] md:h-[388px]"
+                  className="absolute left-1/2 top-1/2 h-[299px] max-w-none object-fill opacity-80 sm:h-[449px] md:h-[541px]"
                 />
               </div>
 

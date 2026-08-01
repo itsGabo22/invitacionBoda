@@ -59,20 +59,25 @@ export default function OurStory() {
     // ahora el progreso se calcula a partir del scrollLeft de la propia tira: avanza
     // exactamente en el tramo que toma deslizar de la primera tarjeta a la segunda, así
     // que solo cambia cuando de verdad se desliza el carrusel, no al bajar la página.
+    //
+    // El umbral es la MITAD del ancho de la tarjeta (no la tarjeta+gap completa): si
+    // dura el ancho completo, el crossfade termina justo cuando la tarjeta 1 ya está
+    // saliendo de la vista (exactamente cuando la 2 llega a su posición de reposo), así
+    // que la persona nunca alcanza a ver bien la foto final (el bebé) todavía sobre la
+    // tarjeta 1 — con medio ancho, termina a la mitad del gesto de deslizar a la
+    // tarjeta 2, mientras la 1 sigue cómodamente visible.
     gsap.set(photoBRef.current, { opacity: 0 });
 
     let threshold = 1;
     // En pantallas anchas la tira puede quedar centrada y (casi) sin overflow —
     // a veces sobra apenas un puñado de píxeles, imperceptible con mouse (no hay
-    // scrollbar visible). Exigir deslizar al menos medio ancho de tarjeta para
+    // scrollbar visible). Exigir deslizar al menos un cuarto del ancho de tarjeta para
     // considerarla "deslizable" evita que quede congelada en la primera foto para
     // siempre en esos casos; con overflow real (el carrusel táctil) sí se activa.
     let isScrollable = true;
 
     const measure = () => {
-      const styles = getComputedStyle(strip);
-      const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
-      threshold = Math.max(firstCard.offsetWidth + gap, 1);
+      threshold = Math.max(firstCard.offsetWidth * 0.5, 1);
       isScrollable = strip.scrollWidth - strip.clientWidth >= threshold * 0.5;
     };
 
