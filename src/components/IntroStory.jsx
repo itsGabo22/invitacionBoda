@@ -186,7 +186,8 @@ export default function IntroStory() {
         {/* Anuncio */}
         <div className="mx-auto mt-16 max-w-2xl text-center sm:mt-20">
           <p className="font-accent text-4xl italic text-ink sm:text-5xl">Esteban &amp; Natalia</p>
-          <p className="mt-2 font-display text-2xl font-extrabold leading-snug text-ink sm:text-3xl md:text-4xl">
+          <p className="mt-1 font-accent text-4xl italic text-ink sm:text-5xl">Aylin Celeste</p>
+          <p className="mt-3 font-display text-2xl font-extrabold leading-snug text-ink sm:text-3xl md:text-4xl">
             ¡Nos casamos y bautizamos a Aylin Celeste!
           </p>
 
