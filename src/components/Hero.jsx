@@ -10,7 +10,7 @@ export default function Hero() {
         <img
           src="/assets/portada-placeholder.webp"
           alt="Esteban, Natalia y Aylin, la familia que celebra su historia"
-          className="h-full w-full scale-110 object-cover object-[65%_center]"
+          className="h-full w-full scale-110 object-cover object-[75%_center]"
         />
         <div className="absolute inset-0 bg-ink/30" />
         <div className="absolute inset-0 bg-gradient-to-b from-ink/55 via-transparent to-ink/70" />
