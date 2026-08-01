@@ -327,16 +327,23 @@ export default function OurStory() {
                     </>
                   ) : (
                     <>
+                      {/* photoA: capa base, sin opacidad manipulada — queda debajo,
+                          revelada una vez que photoB (el bebé) se desvanece al deslizar
+                          la tira lo suficiente. */}
                       <img
                         ref={photoARef}
-                        src="/assets/historia-01.png"
+                        src="/assets/historia-01-b.png"
                         alt={moment.alt}
                         loading="lazy"
                         className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
                       />
+                      {/* photoB: por defecto visible (opacity:1, sin clase que la
+                          oculte) — el bebé (Natalia) es lo que se ve en reposo, encima de
+                          photoA, hasta que updateFade la desvanece según el scroll de la
+                          tira. */}
                       <img
                         ref={photoBRef}
-                        src="/assets/historia-01-b.png"
+                        src="/assets/historia-01.png"
                         alt={moment.alt}
                         loading="lazy"
                         className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out will-change-[opacity] group-hover:grayscale-0"
