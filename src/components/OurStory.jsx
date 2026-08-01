@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import SectionTexture from './SectionTexture.jsx';
 import useRevealFailsafe from '../hooks/useRevealFailsafe.js';
@@ -40,12 +40,15 @@ export default function OurStory() {
   const firstCardRef = useRef(null);
   const photoARef = useRef(null);
   const photoBRef = useRef(null);
+  // Se lee una sola vez al montar (igual que en el resto del sitio): con motion
+  // reducida, la primera tarjeta renderiza ambas fotos apiladas y estáticas en vez
+  // del par que se cruza con el scroll de la tira, así que ninguna se pierde.
+  const [reduceMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   useEffect(() => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     if (reduceMotion) {
-      gsap.set(photoBRef.current, { opacity: 1 });
+      // Con motion reducida el JSX de más abajo ya renderiza ambas fotos apiladas
+      // en vez del par superpuesto photoA/photoB — no hay nada que fijar aquí.
       return undefined;
     }
 
@@ -115,14 +118,16 @@ export default function OurStory() {
       strip.removeEventListener('scroll', onScroll);
       delete strip.dataset.scrollProven;
     };
-  }, []);
+  }, [reduceMotion]);
 
   // Red de seguridad: si el carrusel nunca demuestra estar vivo (el listener de
   // scroll arriba nunca dispara — batería/rAF/lo que sea) pero la sección lleva un
   // buen rato a la vista, fuerza photoB a visible directamente. No debería activarse
-  // en un dispositivo sano, donde el usuario ya desliza la tira mucho antes.
+  // en un dispositivo sano, donde el usuario ya desliza la tira mucho antes. No
+  // aplica con motion reducida: ahí photoBRef ni siquiera se monta (ver JSX).
   const forcePhotoBReveal = useCallback(() => {
-    const opacity = photoBRef.current && Number(getComputedStyle(photoBRef.current).opacity);
+    if (!photoBRef.current) return;
+    const opacity = Number(getComputedStyle(photoBRef.current).opacity);
     if (opacity < 0.95) {
       gsap.set(photoBRef.current, { opacity: 1 });
     }
@@ -191,22 +196,44 @@ export default function OurStory() {
                 className="relative aspect-[3/4] overflow-hidden bg-stone/10 shadow-[0_18px_30px_-20px_rgba(22,21,19,0.45)] ring-1 ring-ink/10 transition-transform duration-500 ease-out group-hover:-translate-y-1"
               >
                 {index === 0 ? (
-                  <>
-                    <img
-                      ref={photoARef}
-                      src="/assets/historia-01.png"
-                      alt={moment.alt}
-                      loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
-                    />
-                    <img
-                      ref={photoBRef}
-                      src="/assets/historia-01-b.png"
-                      alt={moment.alt}
-                      loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out will-change-[opacity] group-hover:grayscale-0"
-                    />
-                  </>
+                  reduceMotion ? (
+                    // Motion reducida: nunca se anima el crossfade ligado al scroll de la
+                    // tira, así que en vez de asentarse en una sola foto se muestran las
+                    // dos apiladas — el par completo, sin recortar ninguna a una franja
+                    // angosta como pasaría lado a lado en esta tarjeta (aspect 3/4).
+                    <div className="flex h-full w-full flex-col">
+                      <img
+                        src="/assets/historia-01.png"
+                        alt={moment.alt}
+                        loading="lazy"
+                        className="h-1/2 w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                      />
+                      <span aria-hidden="true" className="h-px w-full bg-bone/60" />
+                      <img
+                        src="/assets/historia-01-b.png"
+                        alt={moment.alt}
+                        loading="lazy"
+                        className="h-1/2 w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <img
+                        ref={photoARef}
+                        src="/assets/historia-01.png"
+                        alt={moment.alt}
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                      />
+                      <img
+                        ref={photoBRef}
+                        src="/assets/historia-01-b.png"
+                        alt={moment.alt}
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover grayscale-[0.15] transition-[filter] duration-500 ease-out will-change-[opacity] group-hover:grayscale-0"
+                      />
+                    </>
+                  )
                 ) : (
                   <img
                     src={moment.src}

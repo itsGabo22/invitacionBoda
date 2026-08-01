@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SectionTexture from './SectionTexture.jsx';
@@ -22,20 +22,23 @@ export default function IntroStory() {
   const cardRef = useRef(null);
   const photo1Ref = useRef(null);
   const photo2Ref = useRef(null);
+  // Se lee una sola vez al montar (igual que en el resto del sitio): con motion
+  // reducida, el card de abajo renderiza ambas fotos apiladas y estáticas en vez
+  // del par que se cruza con la animación, así que ninguna de las dos se pierde.
+  const [reduceMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-  // Estado final "de verdad" del anuncio (sobre abierto, foto del bautizo visible):
-  // lo usan tanto la rama de motion reducida como la red de seguridad de más abajo,
-  // para no repetir la misma lista de valores en dos sitios.
+  // Estado final "de verdad" del anuncio (sobre abierto, tarjeta afuera): lo usan
+  // tanto la rama de motion reducida como la red de seguridad de más abajo. Con
+  // motion reducida photo1Ref/photo2Ref no existen (el JSX renderiza otra cosa),
+  // de ahí los guards — gsap.set(null, ...) generaría una advertencia en consola.
   const applyFinalState = useCallback(() => {
     gsap.set(flapRef.current, { transformOrigin: '50% 100%', rotateX: -92, opacity: 0 });
     gsap.set(cardRef.current, { yPercent: 0 });
-    gsap.set(photo1Ref.current, { opacity: 0 });
-    gsap.set(photo2Ref.current, { opacity: 1 });
+    if (photo1Ref.current) gsap.set(photo1Ref.current, { opacity: 0 });
+    if (photo2Ref.current) gsap.set(photo2Ref.current, { opacity: 1 });
   }, []);
 
   useEffect(() => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     if (reduceMotion) {
       applyFinalState();
       return undefined;
@@ -93,20 +96,22 @@ export default function IntroStory() {
     }
 
     return () => ctx?.revert();
-  }, [applyFinalState]);
+  }, [reduceMotion, applyFinalState]);
 
   // Red de seguridad: el timeline de arriba es un scrub ligado al scroll — si por lo
   // que sea (rAF/ticker en pausa por ahorro de batería, scroll que deja de disparar
   // eventos, cualquier causa) se queda a medio camino después de que la sección lleva
   // un buen rato a la vista, esto fuerza el estado final directamente, sin pasar por
-  // el ticker de GSAP en absoluto (ver revealFailsafe.js).
+  // el ticker de GSAP en absoluto (ver revealFailsafe.js). No aplica con motion
+  // reducida: ahí nunca se oculta nada, no hay nada que forzar.
   const forceIntroReveal = useCallback(() => {
-    const flapOpacity = flapRef.current && Number(getComputedStyle(flapRef.current).opacity);
-    const photo2Opacity = photo2Ref.current && Number(getComputedStyle(photo2Ref.current).opacity);
+    if (reduceMotion) return;
+    const flapOpacity = Number(getComputedStyle(flapRef.current).opacity);
+    const photo2Opacity = Number(getComputedStyle(photo2Ref.current).opacity);
     if (flapOpacity > 0.05 || photo2Opacity < 0.95) {
       applyFinalState();
     }
-  }, [applyFinalState]);
+  }, [reduceMotion, applyFinalState]);
 
   useRevealFailsafe(sectionRef, forceIntroReveal);
 
@@ -167,20 +172,45 @@ export default function IntroStory() {
               className="absolute left-[13%] top-[24%] z-10 w-[74%] aspect-[4/5] bg-bone p-2 shadow-[0_18px_30px_-20px_rgba(22,21,19,0.45)] ring-1 ring-ink/10 will-change-transform"
             >
               <div className="relative h-full w-full overflow-hidden">
-                <img
-                  ref={photo1Ref}
-                  src="/assets/sobre-foto-01.png"
-                  alt="Esteban y Natalia, retrato de pareja"
-                  className="absolute inset-0 h-full w-full object-cover"
-                  style={{ objectPosition: '50% 10%' }}
-                />
-                <img
-                  ref={photo2Ref}
-                  src="/assets/sobre-foto-02.png"
-                  alt="El bautizo de Celeste"
-                  className="absolute inset-0 h-full w-full object-cover"
-                  style={{ objectPosition: '50% 10%' }}
-                />
+                {reduceMotion ? (
+                  // Motion reducida: nunca se anima un crossfade, así que en vez de
+                  // asentarse en una sola foto se muestran las dos apiladas — el
+                  // par completo (pareja + bautizo), sin recortar ninguna a una
+                  // franja demasiado angosta como pasaría lado a lado en una
+                  // tarjeta este de alta (aspect 4/5).
+                  <div className="flex h-full w-full flex-col">
+                    <img
+                      src="/assets/sobre-foto-01.png"
+                      alt="Esteban y Natalia, retrato de pareja"
+                      className="h-1/2 w-full object-cover"
+                      style={{ objectPosition: '50% 15%' }}
+                    />
+                    <span aria-hidden="true" className="h-px w-full bg-champagne/60" />
+                    <img
+                      src="/assets/sobre-foto-02.png"
+                      alt="El bautizo de Celeste"
+                      className="h-1/2 w-full object-cover"
+                      style={{ objectPosition: '50% 15%' }}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <img
+                      ref={photo1Ref}
+                      src="/assets/sobre-foto-01.png"
+                      alt="Esteban y Natalia, retrato de pareja"
+                      className="absolute inset-0 h-full w-full object-cover"
+                      style={{ objectPosition: '50% 10%' }}
+                    />
+                    <img
+                      ref={photo2Ref}
+                      src="/assets/sobre-foto-02.png"
+                      alt="El bautizo de Celeste"
+                      className="absolute inset-0 h-full w-full object-cover"
+                      style={{ objectPosition: '50% 10%' }}
+                    />
+                  </>
+                )}
                 <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-bone/20" />
               </div>
             </div>
