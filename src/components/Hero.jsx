@@ -3,13 +3,13 @@ export default function Hero() {
     <section
       id="portada"
       aria-label="Portada"
-      className="relative flex min-h-screen w-full flex-col justify-between overflow-hidden bg-ink"
+      className="relative flex min-h-screen min-h-dvh w-full flex-col justify-between overflow-hidden bg-ink"
     >
       {/* Fotografía editorial: capa de parallax, se mueve en translateY vía GSAP */}
       <div data-parallax="24" className="absolute inset-0 will-change-transform">
         <img
           src="/assets/portada-placeholder.webp"
-          alt="Esteban, Natalia y Aylin, la familia que celebra su historia"
+          alt="Esteban, Natalia y Celeste, la familia que celebra su historia"
           className="h-full w-full scale-110 object-cover object-[80%_center]"
         />
         <div className="absolute inset-0 bg-ink/30" />

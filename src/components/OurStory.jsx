@@ -18,17 +18,17 @@ const MOMENTS = [
   },
   {
     src: '/assets/historia-03.png',
-    alt: 'Natalia en la dulce espera de Aylin',
+    alt: 'Natalia en la dulce espera de Celeste',
     caption: 'Esperándote',
   },
   {
     src: '/assets/historia-04.png',
-    alt: 'El bautizo de Aylin',
+    alt: 'El bautizo de Celeste',
     caption: 'Nuestra bendición',
   },
   {
     src: '/assets/historia-05.png',
-    alt: 'Esteban, Natalia y Aylin, la familia completa',
+    alt: 'Esteban, Natalia y Celeste, la familia completa',
     caption: 'Nuestra familia',
   },
 ];
@@ -156,9 +156,8 @@ export default function OurStory() {
             <figure
               key={moment.src}
               data-stagger-item
-              className={`group w-[74vw] max-w-[19rem] shrink-0 snap-center sm:w-64 md:w-56 lg:w-64 ${
-                index % 2 === 1 ? 'sm:mt-8' : ''
-              }`}
+              className={`group w-[74vw] max-w-[19rem] shrink-0 snap-center sm:w-64 md:w-56 lg:w-64 ${index % 2 === 1 ? 'sm:mt-8' : ''
+                }`}
             >
               <div
                 ref={index === 0 ? firstCardRef : undefined}

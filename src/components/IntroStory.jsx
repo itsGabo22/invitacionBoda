@@ -31,7 +31,7 @@ export default function IntroStory() {
       // photo2 arranca con opacity-0 (clase estática en el JSX) porque normalmente solo
       // se revela en el último tramo de la línea de tiempo — sin este set explícito,
       // con motion reducida (que se salta toda la animación) se quedaría invisible para
-      // siempre y solo se vería photo1 (la pareja), nunca la foto del bautizo de Aylin.
+      // siempre y solo se vería photo1 (la pareja), nunca la foto del bautizo de Celeste.
       gsap.set(photo1Ref.current, { opacity: 0 });
       gsap.set(photo2Ref.current, { opacity: 1 });
       return undefined;
@@ -143,7 +143,7 @@ export default function IntroStory() {
                 <img
                   ref={photo2Ref}
                   src="/assets/sobre-foto-02.png"
-                  alt="El bautizo de Aylin Celeste"
+                  alt="El bautizo de Celeste"
                   className="absolute inset-0 h-full w-full object-cover opacity-0"
                   style={{ objectPosition: '50% 10%' }}
                 />
@@ -186,10 +186,10 @@ export default function IntroStory() {
         {/* Anuncio */}
         <div className="mx-auto mt-16 max-w-2xl text-center sm:mt-20">
           <p className="font-accent text-4xl italic text-ink sm:text-5xl">Esteban &amp; Natalia</p>
-          <p className="mt-1 font-accent text-4xl italic text-ink sm:text-5xl">Aylin Celeste</p>
           <p className="mt-3 font-display text-2xl font-extrabold leading-snug text-ink sm:text-3xl md:text-4xl">
-            ¡Nos casamos y bautizamos a Aylin Celeste!
+            ¡Acompáñanos a celebrar nuestro matrimonio y el bautizo de nuestra hija!
           </p>
+          <p className="mt-4 font-accent text-4xl italic text-ink sm:text-5xl">Celeste</p>
 
           <span aria-hidden="true" className="mx-auto mt-8 block h-px w-16 bg-champagne" />
 
